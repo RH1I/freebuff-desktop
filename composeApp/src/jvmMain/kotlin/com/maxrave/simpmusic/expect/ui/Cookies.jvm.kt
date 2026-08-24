@@ -18,6 +18,7 @@ import com.maxrave.simpmusic.expect.openUrl
 import com.maxrave.simpmusic.ui.theme.typo
 import org.jetbrains.compose.resources.stringResource
 import simpmusic.composeapp.generated.resources.Res
+import simpmusic.composeapp.generated.resources.cookie_login_desktop_hint
 import simpmusic.composeapp.generated.resources.desktop_webview_description
 import simpmusic.composeapp.generated.resources.open_blog_post
 import java.net.CookieHandler
@@ -55,28 +56,17 @@ actual fun PlatformWebView(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                stringResource(Res.string.desktop_webview_description),
+                stringResource(Res.string.cookie_login_desktop_hint),
                 style = typo().labelMedium,
                 color = Color.White,
                 textAlign = TextAlign.Center
             )
-            Button(
-                onClick = {
-                    openUrl("https://www.simpmusic.org/blogs/en/how-to-log-in-on-desktop-app")
-                },
-            ) {
-                Text(
-                    stringResource(Res.string.open_blog_post),
-                    style = typo().labelMedium,
-                    color = Color.DarkGray,
-                    textAlign = TextAlign.Center
-                )
-            }
         }
         aboveContent()
     }
 }
 
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
 @Composable
 actual fun DiscordWebView(
     state: MutableState<WebViewState>,
@@ -91,23 +81,11 @@ actual fun DiscordWebView(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                stringResource(Res.string.desktop_webview_description),
+                stringResource(Res.string.cookie_login_desktop_hint),
                 style = typo().labelMedium,
                 color = Color.White,
                 textAlign = TextAlign.Center
             )
-            Button(
-                onClick = {
-                    openUrl("https://www.simpmusic.org/blogs/en/how-to-log-in-to-Discord-on-desktop-app")
-                },
-            ) {
-                Text(
-                    stringResource(Res.string.open_blog_post),
-                    style = typo().labelMedium,
-                    color = Color.DarkGray,
-                    textAlign = TextAlign.Center
-                )
-            }
         }
         aboveContent()
     }

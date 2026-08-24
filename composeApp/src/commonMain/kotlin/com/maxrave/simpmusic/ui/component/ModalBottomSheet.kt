@@ -130,6 +130,7 @@ import com.maxrave.domain.utils.toListName
 import com.maxrave.logger.Logger
 import com.maxrave.simpmusic.Platform
 import com.maxrave.simpmusic.expect.copyToClipboard
+import com.maxrave.simpmusic.expect.pasteFromClipboard
 import com.maxrave.simpmusic.expect.shareUrl
 import com.maxrave.simpmusic.expect.ui.photoPickerResult
 import com.maxrave.simpmusic.extension.displayNameRes
@@ -202,6 +203,10 @@ import simpmusic.composeapp.generated.resources.can_not_be_empty
 import simpmusic.composeapp.generated.resources.cancel
 import simpmusic.composeapp.generated.resources.codec
 import simpmusic.composeapp.generated.resources.copied_to_clipboard
+import simpmusic.composeapp.generated.resources.cookie_login_steps_discord
+import simpmusic.composeapp.generated.resources.cookie_login_steps_spotify
+import simpmusic.composeapp.generated.resources.cookie_login_steps_youtube
+import simpmusic.composeapp.generated.resources.paste_from_clipboard
 import simpmusic.composeapp.generated.resources.delete
 import simpmusic.composeapp.generated.resources.delete_playlist
 import simpmusic.composeapp.generated.resources.delete_song_from_playlist
@@ -3168,27 +3173,64 @@ fun DevLogInBottomSheet(
                 ) {}
                 Spacer(modifier = Modifier.height(10.dp))
                 Text(text = runBlocking { type.getTitle() }, style = typo().labelSmall)
-                Spacer(modifier = Modifier.height(5.dp))
+                Spacer(modifier = Modifier.height(8.dp))
+                // Step-by-step guide so the cookie flow is self-explanatory.
+                Text(
+                    text =
+                        stringResource(
+                            when (type) {
+                                is DevLogInType.Spotify -> Res.string.cookie_login_steps_spotify
+                                is DevLogInType.YouTube -> Res.string.cookie_login_steps_youtube
+                                is DevLogInType.Discord -> Res.string.cookie_login_steps_discord
+                            },
+                        ),
+                    style = typo().bodySmall,
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp),
+                )
+                Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
                     value = value,
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
                     onValueChange = { value = it },
-                    maxLines = 1,
+                    minLines = 3,
+                    maxLines = 6,
                 )
-                Spacer(modifier = Modifier.height(5.dp))
-                TextButton(
-                    onClick = {
-                        if (value.isNotEmpty() && value.isNotBlank()) {
-                            showToast(runBlocking { getString(Res.string.processing) }, ToastGravity.Bottom)
-                            onDismiss()
-                            onDone(value)
-                        } else {
-                            showToast(runBlocking { getString(Res.string.can_not_be_empty) }, ToastGravity.Bottom)
-                        }
-                    },
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    Text(text = stringResource(Res.string.set), style = typo().labelSmall)
+                    OutlinedButton(
+                        onClick = {
+                            pasteFromClipboard()?.let { value = it }
+                        },
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        Icon(
+                            imageVector = SimpIcons.ContentCopy,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp),
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(text = stringResource(Res.string.paste_from_clipboard), style = typo().labelSmall)
+                    }
+                    TextButton(
+                        onClick = {
+                            if (value.isNotEmpty() && value.isNotBlank()) {
+                                showToast(runBlocking { getString(Res.string.processing) }, ToastGravity.Bottom)
+                                onDismiss()
+                                onDone(value)
+                            } else {
+                                showToast(runBlocking { getString(Res.string.can_not_be_empty) }, ToastGravity.Bottom)
+                            }
+                        },
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        Text(text = stringResource(Res.string.set), style = typo().labelSmall)
+                    }
                 }
                 Spacer(modifier = Modifier.height(5.dp))
                 EndOfModalBottomSheet()

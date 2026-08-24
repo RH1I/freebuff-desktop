@@ -362,6 +362,11 @@
     <string name="theme_color_default">Default</string>
     <string name="theme_color_golden_moon">Golden Moon</string>
     <string name="theme_color_ink_stars">Ink &amp; Stars</string>
+    <string name="cookie_login_steps_youtube">1) Open music.youtube.com in your browser and sign in\n2) Press F12 → Application → Cookies → music.youtube.com\n3) Select all cookie text, copy it, then paste it below</string>
+    <string name="cookie_login_steps_spotify">1) Open open.spotify.com in your browser and sign in\n2) Press F12 → Application → Cookies → copy the sp_dc value\n3) Paste it below</string>
+    <string name="cookie_login_steps_discord">1) Open discord.com in your browser and log in\n2) Press F12 → Application → Local Storage → copy the token value\n3) Paste it below</string>
+    <string name="paste_from_clipboard">Paste</string>
+    <string name="cookie_login_desktop_hint">No browser inside the desktop app — use the cookie login: tap the icon at the top corner, follow the steps, and paste your cookie.</string>
     <string name="theme_color_wallpaper">Wallpaper</string>
     <string name="theme_color_custom">Custom</string>
     <string name="custom_color">Custom color</string>

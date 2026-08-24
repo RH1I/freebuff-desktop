@@ -359,4 +359,9 @@
     <string name="download_speed">سرعة التحميل %1$s </string>
     <string name="theme_color_golden_moon">القمر الذهبي</string>
     <string name="theme_color_ink_stars">حبر والنجوم</string>
+    <string name="paste_from_clipboard">لصق</string>
+    <string name="cookie_login_steps_youtube">1) افتح music.youtube.com في متصفحك وسجّل دخولك\n2) اضغط F12 ← Application ← Cookies ← music.youtube.com\n3) انسخ نص الكوكيز كاملاً والصقه هنا</string>
+    <string name="cookie_login_steps_spotify">1) افتح open.spotify.com في متصفحك وسجّل دخولك\n2) اضغط F12 ← Application ← Cookies ← انسخ قيمة sp_dc\n3) الصقها هنا</string>
+    <string name="cookie_login_steps_discord">1) افتح discord.com في متصفحك وسجّل دخولك\n2) اضغط F12 ← Application ← Local Storage ← انسخ قيمة token\n3) الصقها هنا</string>
+    <string name="cookie_login_desktop_hint">تطبيق الديسكتوب لا يحتوي متصفحاً مدمجاً — استخدم تسجيل الدخول بالكوكيز: اضغط أيقونة الزاوية العلوية، اتبع الخطوات، والصق الكوكيز.</string>
 </resources>
