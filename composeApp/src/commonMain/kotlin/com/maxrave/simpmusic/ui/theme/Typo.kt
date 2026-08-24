@@ -13,12 +13,24 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import org.jetbrains.compose.resources.Font
 import simpmusic.composeapp.generated.resources.Res
-import simpmusic.composeapp.generated.resources.poppins_medium
+import simpmusic.composeapp.generated.resources.o0sans_bold
+import simpmusic.composeapp.generated.resources.o0sans_medium
+import simpmusic.composeapp.generated.resources.o0sans_regular
 
+/**
+ * 0o Sans — the app's own typeface, engineered from Alexandria (OFL) with
+ * non-standard weights (415/510/680) and +2% tracking. Each text role gets its
+ * real cut instead of one weight faking them all.
+ */
 @Composable
 fun fontFamily(): FontFamily =
     FontFamily(
-        Font(Res.font.poppins_medium, FontWeight.Normal, FontStyle.Normal),
+        Font(Res.font.o0sans_regular, FontWeight.Light, FontStyle.Normal),
+        Font(Res.font.o0sans_regular, FontWeight.Normal, FontStyle.Normal),
+        Font(Res.font.o0sans_medium, FontWeight.Medium, FontStyle.Normal),
+        Font(Res.font.o0sans_medium, FontWeight.SemiBold, FontStyle.Normal),
+        Font(Res.font.o0sans_bold, FontWeight.Bold, FontStyle.Normal),
+        Font(Res.font.o0sans_bold, FontWeight.ExtraBold, FontStyle.Normal),
     )
 
 /**
