@@ -10,6 +10,20 @@ import androidx.compose.ui.graphics.Color
  */
 val seed = Color(0xFF8ECAE6)
 
+// ===== Custom theme seeds =====
+
+/**
+ * "Golden Moon" — burnt-amber seed taken from the moon's face in the reference
+ * painting. Pairs with warm cream light surfaces; see [AppTheme].
+ */
+val goldenMoonSeed = Color(0xFFC4762E)
+
+/**
+ * "Ink & Stars" — neutral seed; the palette is fully desaturated via
+ * [PaletteStyle.Monochrome], so only its luminance matters.
+ */
+val inkStarsSeed = Color(0xFF8A8A8A)
+
 // ===== Semantic colors (not derivable from the color scheme) =====
 
 /** Liked/favorite state (heart buttons, favorite tiles). */

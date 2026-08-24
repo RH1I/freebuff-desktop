@@ -357,4 +357,6 @@
     <string name="go_to_log_in_page">الذهاب إلى صفحة تسجيل الدخول</string>
     <string name="proxy_host"></string>
     <string name="download_speed">سرعة التحميل %1$s </string>
+    <string name="theme_color_golden_moon">القمر الذهبي</string>
+    <string name="theme_color_ink_stars">حبر والنجوم</string>
 </resources>

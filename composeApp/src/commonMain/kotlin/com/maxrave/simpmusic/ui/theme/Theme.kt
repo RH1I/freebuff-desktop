@@ -98,6 +98,33 @@ private fun ColorScheme.withNeutralLightSurfaces(): ColorScheme =
         inverseOnSurface = Color(0xFFF1F1F1),
     )
 
+/**
+ * Warm cream surfaces for the light variant of the "Golden Moon" theme. Same shape as
+ * [withNeutralLightSurfaces], but the neutral ramp is tinted towards the hazy sepia sky
+ * of the reference painting instead of pure grey.
+ */
+private fun ColorScheme.withCreamLightSurfaces(): ColorScheme =
+    copy(
+        background = Color(0xFFFAF6ED),
+        onBackground = Color(0xFF221A10),
+        surface = Color(0xFFFAF6ED),
+        onSurface = Color(0xFF221A10),
+        surfaceVariant = Color(0xFFEBE2D0),
+        onSurfaceVariant = Color(0xFF4F463A),
+        surfaceTint = primary,
+        surfaceBright = Color(0xFFFFFDF6),
+        surfaceDim = Color(0xFFDAD2C0),
+        surfaceContainerLowest = Color(0xFFFFFDF6),
+        surfaceContainerLow = Color(0xFFF5F0E4),
+        surfaceContainer = Color(0xFFEFE9DB),
+        surfaceContainerHigh = Color(0xFFE9E2D2),
+        surfaceContainerHighest = Color(0xFFE3DBC9),
+        outline = Color(0xFF7E7566),
+        outlineVariant = Color(0xFFD0C6B2),
+        inverseSurface = Color(0xFF2F2A20),
+        inverseOnSurface = Color(0xFFF5F0E4),
+    )
+
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun AppTheme(
@@ -121,21 +148,37 @@ fun AppTheme(
             null
         }
     val seedColor =
-        if (themeColorSource == DataStoreManager.THEME_COLOR_CUSTOM) {
-            customThemeColor ?: seed
+        when (themeColorSource) {
+            DataStoreManager.THEME_COLOR_CUSTOM -> customThemeColor ?: seed
+            DataStoreManager.THEME_COLOR_GOLDEN_MOON -> goldenMoonSeed
+            DataStoreManager.THEME_COLOR_INK_STARS -> inkStarsSeed
+            else -> seed
+        }
+    // "Ink & Stars" is fully desaturated; every other source keeps the tonal-spot look.
+    val paletteStyle =
+        if (themeColorSource == DataStoreManager.THEME_COLOR_INK_STARS) {
+            PaletteStyle.Monochrome
         } else {
-            seed
+            PaletteStyle.TonalSpot
         }
     // Symmetric base: dark pins background/surface to pure black via isAmoled; light pins them to
     // pure white with a neutral-grey ramp (the seed otherwise tints the light neutrals warm/cream).
+    // The "Golden Moon" light theme swaps that ramp for warm cream surfaces instead.
     val colorScheme =
         wallpaperScheme
             ?: rememberDynamicColorScheme(
                 seedColor = seedColor,
                 isDark = isDark,
                 isAmoled = isDark,
-                style = PaletteStyle.TonalSpot,
-                modifyColorScheme = { cs -> if (isDark) cs else cs.withNeutralLightSurfaces() },
+                style = paletteStyle,
+                modifyColorScheme = { cs ->
+                    when {
+                        isDark -> cs
+                        themeColorSource == DataStoreManager.THEME_COLOR_GOLDEN_MOON ->
+                            cs.withCreamLightSurfaces()
+                        else -> cs.withNeutralLightSurfaces()
+                    }
+                },
             )
     // Immersive screens stay dark even at light theme (see [ForceDarkContent]). Resolve their scheme
     // once here instead of letting every such subtree build a palette of its own.
@@ -147,7 +190,7 @@ fun AppTheme(
                 seedColor = seedColor,
                 isDark = true,
                 isAmoled = true,
-                style = PaletteStyle.TonalSpot,
+                style = paletteStyle,
             )
         }
     SystemBarAppearanceEffect(isDark)

@@ -425,6 +425,8 @@ interface DataStoreManager {
         const val THEME_COLOR_DEFAULT = "DEFAULT"
         const val THEME_COLOR_WALLPAPER = "WALLPAPER"
         const val THEME_COLOR_CUSTOM = "CUSTOM"
+        const val THEME_COLOR_GOLDEN_MOON = "GOLDEN_MOON"
+        const val THEME_COLOR_INK_STARS = "INK_STARS"
 
         const val DEFAULT_THEME_COLOR_HEX = "FF8ECAE6"
 
