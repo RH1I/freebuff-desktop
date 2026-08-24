@@ -37,8 +37,7 @@ import com.maxrave.simpmusic.ui.mini_player.MiniPlayerWindow
 import com.maxrave.simpmusic.utils.VersionManager
 import com.maxrave.simpmusic.viewModel.SharedViewModel
 import com.maxrave.simpmusic.viewModel.changeLanguageNative
-import io.sentry.Sentry
-import io.sentry.SentryLevel
+import com.maxrave.logger.Logger
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -186,13 +185,6 @@ fun runDesktopApp(args: Array<String> = emptyArray()) {
 
     VersionManager.initialize()
     configLastfm(BuildKonfig.lastfmApiKey, BuildKonfig.lastfmSecret)
-    if (BuildKonfig.sentryDsn.isNotEmpty()) {
-        Sentry.init { options ->
-            options.dsn = BuildKonfig.sentryDsn
-            options.release = "simpmusic-desktop@${VersionManager.getVersionName()}"
-            options.setDiagnosticLevel(SentryLevel.ERROR)
-        }
-    }
 
     val mediaPlayerHandler by inject<MediaPlayerHandler>(MediaPlayerHandler::class.java)
     mediaPlayerHandler.showToast = { type ->
@@ -209,18 +201,15 @@ fun runDesktopApp(args: Array<String> = emptyArray()) {
         )
     }
     mediaPlayerHandler.pushPlayerError = { error ->
-        Sentry.withScope { scope ->
-            Sentry.captureMessage("Player Error: ${error.message}, code: ${error.errorCode}, code name: ${error.errorCodeName}")
-        }
+        // Local-only: player errors are logged, never reported anywhere.
+        Logger.e("DesktopApp", "Player Error: ${error.message}, code: ${error.errorCode}")
     }
 
     // Register simpmusic:// protocol handler on Windows (HKCU, no admin needed)
     WindowsProtocolRegistrar.register()
 
     val sharedViewModel = getKoin().get<SharedViewModel>()
-    if (sharedViewModel.shouldCheckForUpdate()) {
-        sharedViewModel.checkForUpdate()
-    }
+    // 0_o personal build: no update checks — this app updates only when its owner rebuilds it.
 
     // Connect deep link handler to SharedViewModel
     DesktopDeepLinkHandler.listener = { intent ->

@@ -188,7 +188,7 @@ kotlin {
             // shared JVM UI + expect/actuals and their direct dependencies.
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
-            implementation(libs.sentry.jvm)
+            // 0_o personal build: Sentry removed — crash reports never leave this machine.
             implementation(libs.native.tray)
             implementation(projects.mediaJvmUi)
         }

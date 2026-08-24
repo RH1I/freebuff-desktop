@@ -170,28 +170,9 @@ internal class CommonRepositoryImpl(
                             if (secret.isNotBlank()) youTube.tidalClientSecret = secret
                         }
                 }
-            // Fetch job: pull the latest TIDAL credentials from GitHub raw on each launch
-            // (async, non-blocking). On success we persist into DataStore; the observe job
-            // above then propagates the new values into YouTube reactively.
-            val tidalRemoteConfigJob =
-                launch {
-                    youTube
-                        .getTidalRemoteConfig()
-                        .onSuccess { config ->
-                            // Persist only non-blank fields so a malformed/partial file never
-                            // wipes a previously cached value. No need to diff against the current
-                            // value — the observe job's distinctUntilChanged already prevents
-                            // redundant pushes into YouTube.
-                            config.tidalClientId
-                                ?.takeIf { it.isNotBlank() }
-                                ?.let { dataStoreManager.setTidalClientId(it) }
-                            config.tidalClientSecret
-                                ?.takeIf { it.isNotBlank() }
-                                ?.let { dataStoreManager.setTidalClientSecret(it) }
-                        }.onFailure {
-                            Logger.e("RemoteConfig", "TIDAL remote config fetch failed: ${it.message}")
-                        }
-                }
+            // 0_o personal build: the TIDAL remote-config phone-home is removed —
+            // the app never contacts GitHub (or anywhere else) behind its owner's
+            // back. TIDAL metadata stays disabled, which this build doesn't use.
             val aiClientProviderJob =
                 launch {
                     dataStoreManager.aiProvider.collectLatest { provider ->

@@ -1,7 +1,6 @@
 package com.maxrave.simpmusic
 
 import com.maxrave.simpmusic.utils.VersionManager
-import io.sentry.Sentry
 import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.Dimension
@@ -26,14 +25,8 @@ object CrashDialog {
 
     fun install() {
         Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
-            try {
-                // Report to Sentry if available
-                if (BuildKonfig.sentryDsn.isNotEmpty()) {
-                    Sentry.captureException(throwable)
-                }
-            } catch (_: Exception) {
-                // Sentry might not be initialized
-            }
+            // 0_o personal build: crashes stay on this machine — shown in the
+            // dialog, never reported to any service.
 
             // Show crash dialog on EDT
             try {
