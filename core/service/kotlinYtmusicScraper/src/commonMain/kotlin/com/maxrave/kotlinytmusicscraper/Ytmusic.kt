@@ -155,8 +155,12 @@ class Ytmusic {
     private fun createClient() =
         HttpClient(getEngine()) {
             expectSuccess = true
-            install(CurlLogger) {
-                logger = { Logger.d(TAG, it) }
+            // 0_o: HTTP traffic dumps are debug-only — they allocate huge strings
+            // per request and were a major source of UI jank.
+            if (com.maxrave.logger.Logger.verboseLogging) {
+                install(CurlLogger) {
+                    logger = { Logger.d(TAG, it) }
+                }
             }
             install(HttpRedirect) {
                 checkHttpMethod = false
@@ -164,7 +168,12 @@ class Ytmusic {
             }
             install(Logging) {
                 logger = io.ktor.client.plugins.logging.Logger.DEFAULT
-                level = LogLevel.ALL
+                level =
+                    if (com.maxrave.logger.Logger.verboseLogging) {
+                        LogLevel.ALL
+                    } else {
+                        LogLevel.NONE
+                    }
             }
             install(ContentNegotiation) {
                 protobuf()

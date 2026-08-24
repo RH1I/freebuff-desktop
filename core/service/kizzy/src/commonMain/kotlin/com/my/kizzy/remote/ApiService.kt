@@ -39,8 +39,10 @@ class ApiService {
                 encodeDefaults = true
             })
         }
-        install(CurlLogger) {
-            logger = { Logger.d("KizzyApi", it) }
+        if (com.maxrave.logger.Logger.verboseLogging) {
+            install(CurlLogger) {
+                logger = { Logger.d("KizzyApi", it) }
+            }
         }
         install(HttpTimeout) {
             connectTimeoutMillis = 30_000

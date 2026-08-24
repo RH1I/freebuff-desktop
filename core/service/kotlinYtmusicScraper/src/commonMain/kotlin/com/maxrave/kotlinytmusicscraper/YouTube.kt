@@ -1068,8 +1068,15 @@ class YouTube {
                     ?.find {
                         it?.videoPrimaryInfoRenderer != null
                     }?.videoPrimaryInfoRenderer
+            // 0_o: skip the Return YouTube Dislike call when there is no video —
+            // an empty videoId hit their API with a guaranteed 400 on every
+            // login/settings screen visit.
             val returnYouTubeDislikeResponse =
-                ytMusic.returnYouTubeDislike(videoId).body<ReturnYouTubeDislikeResponse>()
+                if (videoId.isBlank()) {
+                    null
+                } else {
+                    ytMusic.returnYouTubeDislike(videoId).body<ReturnYouTubeDislikeResponse>()
+                }
             return@runCatching SongInfo(
                 videoId = videoId,
                 author =
@@ -1102,9 +1109,9 @@ class YouTube {
                         ?.subscriberCountText
                         ?.simpleText,
                 uploadDate = videoPrimary?.dateText?.simpleText,
-                viewCount = returnYouTubeDislikeResponse.viewCount,
-                like = returnYouTubeDislikeResponse.likes,
-                dislike = returnYouTubeDislikeResponse.dislikes,
+                viewCount = returnYouTubeDislikeResponse?.viewCount,
+                like = returnYouTubeDislikeResponse?.likes,
+                dislike = returnYouTubeDislikeResponse?.dislikes,
             )
             // Get author thumbnails, subscribers, description, like count
         }
@@ -1503,7 +1510,11 @@ class YouTube {
                         WEB_REMIX,
                         continuation,
                     )
-            Logger.d(TAG, "Next Playlists ${res.bodyAsText()}")
+            // Reading the whole body just to log it costs a full string allocation
+            // per request — only do it when verbose logging is actually on.
+            if (com.maxrave.logger.Logger.verboseLogging) {
+                Logger.d(TAG, "Next Playlists ${res.bodyAsText()}")
+            }
             val response = res.body<BrowseResponse>()
             Pair(
                 response
@@ -1716,7 +1727,9 @@ class YouTube {
             ytMusic
                 .accountMenu(customCookie, WEB_REMIX)
                 .apply {
-                    Logger.d(TAG, this.bodyAsText())
+                    if (com.maxrave.logger.Logger.verboseLogging) {
+                        Logger.d(TAG, this.bodyAsText())
+                    }
                 }.body<AccountMenuResponse>()
                 .actions[0]
                 .openPopupAction.popup.multiPageMenuRenderer.header

@@ -5,6 +5,15 @@ import co.touchlab.kermit.Logger
 object Logger {
     private val logger = Logger
 
+    /**
+     * Master switch for debug-level logging. Production builds keep this off:
+     * debug logs here include full HTTP traffic dumps whose strings are built
+     * eagerly at the call sites, so even "muted" logging used to cost real
+     * memory and jank. Flip to true (or -D0o.debug=true on desktop) only while
+     * debugging.
+     */
+    var verboseLogging: Boolean = false
+
     // Tags suppressed at all log levels. Add a tag here to silence its logs globally.
     private val mutedTags =
         setOf(
@@ -17,7 +26,7 @@ object Logger {
         tag: String,
         message: String,
     ) {
-        if (isMuted(tag)) return
+        if (!verboseLogging || isMuted(tag)) return
         logger.d(
             tag = tag,
             message = {

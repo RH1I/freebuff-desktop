@@ -47,8 +47,10 @@ class SimpMusicLyrics {
             expectSuccess = false
             followRedirects = true
             install(HttpCache)
-            install(CurlLogger) {
-                logger = { Logger.d("SimpMusicLyrics", it) }
+            if (com.maxrave.logger.Logger.verboseLogging) {
+                install(CurlLogger) {
+                    logger = { Logger.d("SimpMusicLyrics", it) }
+                }
             }
             install(HttpSend) {
                 maxSendCount = 100

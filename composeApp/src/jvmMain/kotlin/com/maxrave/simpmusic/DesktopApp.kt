@@ -102,6 +102,19 @@ fun runDesktopApp(args: Array<String> = emptyArray()) {
     System.setProperty("compose.interop.blending", "true")
     System.setProperty("compose.layers.type", "COMPONENT")
 
+    // 0_o: the software renderer caps the UI at ~10-25 FPS (JetBrains CMP #4199)
+    // while OpenGL holds a smooth 60. Request OpenGL explicitly and let skiko
+    // degrade to software automatically on machines without GPU support.
+    if (System.getProperty("skiko.renderApi") == null) {
+        System.setProperty("skiko.renderApi", "OPENGL")
+        System.setProperty("skiko.fallback.renderApi", "SOFTWARE")
+    }
+
+    // 0_o: opt-in verbose logging for debugging sessions: -D0o.debug=true
+    val debugLogging = System.getProperty("0o.debug") == "true"
+    com.maxrave.logger.Logger.verboseLogging = debugLogging
+    com.maxrave.ktorext.curl.HttpDebugLogging.enabled = debugLogging
+
     // Skiko's vsync wait can park the EDT forever after a display change:
     // macOS waits on a CVDisplayLink-signalled NSConditionLock with no timeout
     // (DisplayLinkThrottler.mm), Linux blocks inside the vsync'd glXSwapBuffers

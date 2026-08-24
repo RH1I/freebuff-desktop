@@ -1139,11 +1139,9 @@ class SharedViewModel(
             }
         }
 
-        val shouldSendLyricsToSimpMusic =
-            runBlocking {
-                dataStoreManager.helpBuildLyricsDatabase.first() == TRUE
-            } &&
-                lyricsProvider != LyricsProvider.SIMPMUSIC
+        // 0_o: the "help build the SimpMusic lyrics database" send-back feature is
+        // removed — lyrics never leave this machine.
+
         if (_nowPlayingState.value?.songEntity?.videoId == videoId) {
             val track = _nowPlayingState.value?.track
             when (isTranslatedLyrics) {
@@ -1163,27 +1161,6 @@ class SharedViewModel(
                                     translatedLyrics = lyrics to lyricsProvider,
                                 ),
                         )
-                    }
-                    if (shouldSendLyricsToSimpMusic && track != null) {
-                        viewModelScope.launch {
-                            lyricsCanvasRepository
-                                .insertSimpMusicTranslatedLyrics(
-                                    dataStoreManager,
-                                    track,
-                                    lyrics,
-                                    dataStoreManager.translationLanguage.first(),
-                                ).collect {
-                                    when (it) {
-                                        is Resource.Error -> {
-                                            log("Insert SimpMusic Translated Lyrics Error ${it.message}")
-                                        }
-
-                                        is Resource.Success -> {
-                                            log("Insert SimpMusic Translated Lyrics Success")
-                                        }
-                                    }
-                                }
-                        }
                     }
                 }
 
@@ -1216,27 +1193,6 @@ class SharedViewModel(
                             ),
                         )
                     }
-                    if (shouldSendLyricsToSimpMusic && track != null) {
-                        viewModelScope.launch {
-                            lyricsCanvasRepository
-                                .insertSimpMusicLyrics(
-                                    dataStoreManager,
-                                    track,
-                                    duration,
-                                    lyrics,
-                                ).collect {
-                                    when (it) {
-                                        is Resource.Error -> {
-                                            Logger.w(tag, "Insert SimpMusic Lyrics Error ${it.message}")
-                                        }
-
-                                        is Resource.Success -> {
-                                            Logger.d(tag, "Insert SimpMusic Lyrics Success")
-                                        }
-                                    }
-                                }
-                        }
-                    }
                 }
             }
         }
@@ -1268,9 +1224,10 @@ class SharedViewModel(
             resetLyricsVoteState()
             val lyricsProvider = dataStoreManager.lyricsProvider.first()
             when (lyricsProvider) {
+                // 0_o: the SimpMusic lyrics server is removed from this personal
+                // build — stored SIMPMUSIC preferences fall back to LRCLIB.
                 DataStoreManager.SIMPMUSIC -> {
-                    getSimpMusicLyrics(
-                        videoId,
+                    getLrclibLyrics(
                         song,
                         (artist ?: ""),
                         duration,
@@ -1311,39 +1268,13 @@ class SharedViewModel(
         artist: String?,
         duration: Int,
     ) {
-        lyricsCanvasRepository.getSimpMusicLyrics(videoId).collectLatest {
-            Logger.w(tag, "Get SimpMusic Lyrics for $videoId: $it")
-            val data = it.data
-            if (it is Resource.Success && data != null) {
-                Logger.d(tag, "Get SimpMusic Lyrics Success")
-                updateLyrics(
-                    videoId,
-                    duration,
-                    data,
-                    false,
-                    LyricsProvider.SIMPMUSIC,
-                )
-                insertLyrics(
-                    data.toLyricsEntity(videoId),
-                )
-                getSimpMusicTranslatedLyrics(
-                    videoId,
-                    data,
-                )
-            } else if (dataStoreManager.spotifyLyrics.first() == TRUE) {
-                getSpotifyLyrics(
-                    song.toTrack().copy(durationSeconds = duration),
-                    "${song.title} $artist",
-                    duration,
-                )
-            } else {
-                getLrclibLyrics(
-                    song,
-                    (artist ?: ""),
-                    duration,
-                )
-            }
-        }
+        // 0_o: the SimpMusic lyrics server is removed from this personal build.
+        // Kept as a thin delegate so any remaining call sites resolve safely.
+        getLrclibLyrics(
+            song,
+            (artist ?: ""),
+            duration,
+        )
     }
 
     private suspend fun getYouTubeCaption(

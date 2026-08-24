@@ -155,7 +155,6 @@ import com.maxrave.simpmusic.ui.component.NowPlayingBottomSheet
 import com.maxrave.simpmusic.ui.component.PlayPauseButton
 import com.maxrave.simpmusic.ui.component.PlayerControlLayout
 import com.maxrave.simpmusic.ui.component.QueueBottomSheet
-import com.maxrave.simpmusic.ui.component.VoteLyricsDialog
 import com.maxrave.simpmusic.ui.component.rememberHolderPainter
 import com.maxrave.simpmusic.ui.icon.AddCircleOutline
 import com.maxrave.simpmusic.ui.icon.CheckCircle
@@ -300,8 +299,6 @@ fun NowPlayingScreenContent(
     val castState by sharedViewModel.castState.collectAsStateWithLifecycle()
 
     val shouldShowVideo by sharedViewModel.getVideo.collectAsStateWithLifecycle()
-    val translatedVoteState by sharedViewModel.translatedVoteState.collectAsStateWithLifecycle()
-    val lyricsVoteState by sharedViewModel.lyricsVoteState.collectAsStateWithLifecycle()
 
     // Artwork Pager state — Spotify-style horizontal swipe between queue tracks.
     // The pager wraps the Canvas + Thumbnail layers. Controller layout below stays fixed.
@@ -426,9 +423,6 @@ fun NowPlayingScreenContent(
         mutableStateOf(false)
     }
 
-    var showVoteDialog by rememberSaveable {
-        mutableStateOf(false)
-    }
 
     // NEW: Add to Playlist state
     var showAddToPlaylistDirectly by rememberSaveable {
@@ -731,37 +725,6 @@ fun NowPlayingScreenContent(
                 showAddToPlaylistDirectly = false
             },
             videoId = uiState.songUIState.videoId,
-        )
-    }
-
-    // Vote Dialog
-    if (showVoteDialog) {
-        val canVoteLyrics =
-            screenDataState.lyricsData?.lyricsProvider == LyricsProvider.SIMPMUSIC &&
-                screenDataState.lyricsData
-                    ?.lyrics
-                    ?.simpMusicLyrics != null
-        val canVoteTranslatedLyrics =
-            screenDataState.lyricsData?.translatedLyrics?.second == LyricsProvider.SIMPMUSIC &&
-                screenDataState.lyricsData
-                    ?.translatedLyrics
-                    ?.first
-                    ?.simpMusicLyrics != null
-
-        VoteLyricsDialog(
-            canVoteLyrics = canVoteLyrics,
-            canVoteTranslatedLyrics = canVoteTranslatedLyrics,
-            lyricsVoteState = lyricsVoteState,
-            translatedLyricsVoteState = translatedVoteState,
-            onVoteLyrics = { upvote ->
-                sharedViewModel.voteLyrics(upvote)
-            },
-            onVoteTranslatedLyrics = { upvote ->
-                sharedViewModel.voteTranslatedLyrics(upvote)
-            },
-            onDismiss = {
-                showVoteDialog = false
-            },
         )
     }
 
@@ -2189,35 +2152,7 @@ fun NowPlayingScreenContent(
                                             AIBadge()
                                         }
                                         Spacer(modifier = Modifier.weight(1f))
-                                        // Vote button - only show if lyrics or translated lyrics from SimpMusic
-                                        val canVoteLyrics =
-                                            screenDataState.lyricsData?.lyricsProvider == LyricsProvider.SIMPMUSIC &&
-                                                screenDataState.lyricsData
-                                                    ?.lyrics
-                                                    ?.simpMusicLyrics != null
-                                        val canVoteTranslatedLyrics =
-                                            screenDataState.lyricsData?.translatedLyrics?.second == LyricsProvider.SIMPMUSIC &&
-                                                screenDataState.lyricsData
-                                                    ?.translatedLyrics
-                                                    ?.first
-                                                    ?.simpMusicLyrics != null
-                                        if (canVoteLyrics || canVoteTranslatedLyrics) {
-                                            CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides Dp.Unspecified) {
-                                                IconButton(
-                                                    onClick = {
-                                                        showVoteDialog = true
-                                                    },
-                                                ) {
-                                                    Icon(
-                                                        imageVector = SimpIcons.ThumbsUpDown,
-                                                        contentDescription = stringResource(Res.string.rate_lyrics),
-                                                        tint = Color.White,
-                                                        modifier = Modifier.size(16.dp),
-                                                    )
-                                                }
-                                            }
-                                            Spacer(modifier = Modifier.width(8.dp))
-                                        }
+                                        Spacer(modifier = Modifier.width(8.dp))
                                         CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides Dp.Unspecified) {
                                             TextButton(
                                                 onClick = {

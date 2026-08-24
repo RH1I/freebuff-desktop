@@ -37,6 +37,15 @@ class CurlLoggerConfig {
 }
 
 /**
+ * Master switch for curl-command HTTP logging. Production builds keep this
+ * off: building the curl string for every request allocates real memory even
+ * when the output is thrown away, and it was a measurable source of UI jank.
+ */
+object HttpDebugLogging {
+    var enabled: Boolean = false
+}
+
+/**
  * Logs every outgoing Ktor request as a shell-safe `curl` command that can be pasted into a
  * terminal and run as-is. Every dynamic value is wrapped in single quotes, with embedded single
  * quotes escaped via the POSIX `'\''` trick, so bodies containing `"`, `$`, backticks or newlines
@@ -44,6 +53,8 @@ class CurlLoggerConfig {
  *
  * The whole command is emitted as a single line in one [logger] call, so it stays one log entry
  * (no line continuations, no splitting into separate entries).
+ *
+ * Silent unless [HttpDebugLogging.enabled] is set — see the 0_o performance notes.
  *
  * Usage:
  * ```
@@ -58,6 +69,7 @@ val CurlLogger = createClientPlugin("CurlLogger", ::CurlLoggerConfig) {
     val handleCompression = pluginConfig.handleCompression
 
     on(SendingRequest) { request, content ->
+        if (!HttpDebugLogging.enabled) return@on
         try {
             log(buildCurlCommand(request, content, redactHeaders, handleCompression))
         } catch (e: CancellationException) {
