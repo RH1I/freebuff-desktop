@@ -136,7 +136,11 @@ fun NotificationItem(
     navController: NavController,
 ) {
     // 0_o: blog (RSS) notifications are removed from this personal build —
-    // only artist notifications render here.
+    // legacy TYPE_BLOG rows from an older install are skipped entirely so
+    // they never render as broken artist-style items.
+    if (notification.type == NotificationEntity.TYPE_BLOG) {
+        return
+    }
     Box(
         modifier =
             Modifier

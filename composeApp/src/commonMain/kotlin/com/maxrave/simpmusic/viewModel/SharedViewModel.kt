@@ -1765,112 +1765,12 @@ class SharedViewModel(
     private val _lyricsVoteState = MutableStateFlow<VoteData?>(null)
     val lyricsVoteState: StateFlow<VoteData?> = _lyricsVoteState.asStateFlow()
 
-    /**
-     * Vote for SimpMusic original lyrics (upvote or downvote)
-     * @param upvote true for upvote, false for downvote
-     */
-    fun voteLyrics(upvote: Boolean) {
-        val lyricsData = _nowPlayingScreenData.value.lyricsData
-        val lyricsProvider = lyricsData?.lyricsProvider
-        val simpMusicLyricsId = lyricsData?.lyrics?.simpMusicLyrics?.id ?: return
-
-        if (lyricsProvider != LyricsProvider.SIMPMUSIC || simpMusicLyricsId.isEmpty()) {
-            Logger.w(tag, "Cannot vote: not a SimpMusic lyrics or missing ID")
-            return
-        }
-
-        viewModelScope.launch {
-            _lyricsVoteState.update {
-                it?.copy(
-                    state = VoteState.Loading,
-                )
-            }
-            lyricsCanvasRepository
-                .voteSimpMusicLyrics(
-                    lyricsId = simpMusicLyricsId,
-                    upvote = upvote,
-                ).collectLatest { result ->
-                    when (result) {
-                        is Resource.Error -> {
-                            Logger.w(tag, "Vote SimpMusic Lyrics Error ${result.message}")
-                            _lyricsVoteState.update {
-                                it?.copy(
-                                    state = VoteState.Error(result.message ?: "Unknown error"),
-                                )
-                            }
-                        }
-
-                        is Resource.Success -> {
-                            Logger.d(tag, "Vote SimpMusic Lyrics Success")
-                            _lyricsVoteState.update {
-                                it?.copy(
-                                    state = VoteState.Success(upvote),
-                                    vote = it.vote + if (upvote) 1 else -1,
-                                )
-                            }
-                            makeToast(getString(Res.string.vote_submitted))
-                        }
-                    }
-                }
-        }
-    }
-
-    private fun resetLyricsVoteState() {
+        private fun resetLyricsVoteState() {
         _lyricsVoteState.value = null
         _translatedVoteState.value = null
     }
 
-    /**
-     * Vote for SimpMusic translated lyrics (upvote or downvote)
-     * @param upvote true for upvote, false for downvote
-     */
-    fun voteTranslatedLyrics(upvote: Boolean) {
-        val translatedLyrics = _nowPlayingScreenData.value.lyricsData?.translatedLyrics
-        val lyricsProvider = translatedLyrics?.second
-        val simpMusicLyricsId = translatedLyrics?.first?.simpMusicLyrics?.id ?: return
-
-        if (lyricsProvider != LyricsProvider.SIMPMUSIC || simpMusicLyricsId.isEmpty()) {
-            Logger.w(tag, "Cannot vote: not a SimpMusic translated lyrics or missing ID")
-            return
-        }
-
-        viewModelScope.launch {
-            _translatedVoteState.update {
-                it?.copy(
-                    state = VoteState.Loading,
-                )
-            }
-            lyricsCanvasRepository
-                .voteSimpMusicTranslatedLyrics(
-                    translatedLyricsId = simpMusicLyricsId,
-                    upvote = upvote,
-                ).collectLatest { result ->
-                    when (result) {
-                        is Resource.Error -> {
-                            Logger.w(tag, "Vote SimpMusic Translated Lyrics Error ${result.message}")
-                            _translatedVoteState.update {
-                                it?.copy(
-                                    state = VoteState.Error(result.message ?: "Unknown error"),
-                                )
-                            }
-                        }
-
-                        is Resource.Success -> {
-                            Logger.d(tag, "Vote SimpMusic Translated Lyrics Success")
-                            _translatedVoteState.update {
-                                it?.copy(
-                                    state = VoteState.Success(upvote),
-                                    vote = it.vote + if (upvote) 1 else -1,
-                                )
-                            }
-                            makeToast(getString(Res.string.vote_submitted))
-                        }
-                    }
-                }
-        }
-    }
-
-    fun shouldStopMusicService(): Boolean = runBlocking { dataStoreManager.killServiceOnExit.first() == TRUE }
+        fun shouldStopMusicService(): Boolean = runBlocking { dataStoreManager.killServiceOnExit.first() == TRUE }
 
     fun isUserLoggedIn(): Boolean = runBlocking { dataStoreManager.cookie.first().isNotEmpty() }
 

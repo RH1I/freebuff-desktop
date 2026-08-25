@@ -29,13 +29,13 @@ class DiscordRPC(
             details = song.title,
             state = song.artistName?.joinToString(", "),
             largeImage = song.thumbnails?.let { RpcImage.ExternalImage(it) },
-            smallImage = RpcImage.ExternalImage(APP_ICON),
+            smallImage = null,
             largeText = song.albumName,
-            smallText = song.artistName?.firstOrNull(),
             buttons =
                 listOf(
-                    "Listen on SimpMusic" to "https://simpmusic.org/app/watch?v=${song.videoId}",
-                    "Visit SimpMusic" to "https://github.com/maxrave-dev/SimpMusic",
+                    // 0_o: the buttons point at the song itself on YouTube Music —
+                    // never at the upstream project's site.
+                    "Listen on YouTube" to "https://music.youtube.com/watch?v=${song.videoId}",
                 ),
             type = Type.LISTENING,
             since = currentTime,
@@ -46,9 +46,11 @@ class DiscordRPC(
     }
 
     companion object {
+        // 0_o personal build. Note: the presence title on Discord's side comes
+        // from the registered Discord application behind APPLICATION_ID — to
+        // fully rebrand it, create your own Discord application at
+        // discord.com/developers and swap the ID here.
         private const val APPLICATION_ID = "1271273225120125040"
-        private const val APP_NAME: String = "SimpMusic"
-        private const val APP_ICON: String =
-            "https://fra.cloud.appwrite.io/v1/storage/buckets/683f1f620010ba0fa5b1/files/69007bc8001a28a7cea8/view?project=67ec0369002bd8a96885"
+        private const val APP_NAME: String = "0_o"
     }
 }

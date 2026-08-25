@@ -120,7 +120,7 @@ class SimpMusicLyricsClient {
                 ).body<List<LrclibObject>>()
         val lrclibObject: LrclibObject? =
             if (duration != null) {
-                rs.find { abs(it.duration.toInt() - duration) <= 10 }
+                rs.find { abs((it.duration ?: 0f).toInt() - duration) <= 10 }
             } else {
                 rs.firstOrNull()
             }

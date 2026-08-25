@@ -9,8 +9,10 @@ data class LrclibObject(
     val trackName: String?,
     val artistName: String?,
     val albumName: String?,
-    val duration: Float,
-    val instrumental: Boolean,
-    val plainLyrics: String?,
-    val syncedLyrics: String?,
+    // LRCLIB occasionally returns "duration": null for a track — a hard
+    // non-null Float here made the ENTIRE lyrics response fail to parse.
+    val duration: Float? = null,
+    val instrumental: Boolean = false,
+    val plainLyrics: String? = null,
+    val syncedLyrics: String? = null,
 )

@@ -364,4 +364,5 @@
     <string name="cookie_login_steps_spotify">1) افتح open.spotify.com في متصفحك وسجّل دخولك\n2) اضغط F12 ← Application ← Cookies ← انسخ قيمة sp_dc\n3) الصقها هنا</string>
     <string name="cookie_login_steps_discord">1) افتح discord.com في متصفحك وسجّل دخولك\n2) اضغط F12 ← Application ← Local Storage ← انسخ قيمة token\n3) الصقها هنا</string>
     <string name="cookie_login_desktop_hint">تطبيق الديسكتوب لا يحتوي متصفحاً مدمجاً — استخدم تسجيل الدخول بالكوكيز: اضغط أيقونة الزاوية العلوية، اتبع الخطوات، والصق الكوكيز.</string>
+    <string name="player_error_sign_in_required">يوتيوب يطلب التحقق أنك لست بوتاً — سجّل دخولك من الإعدادات ← الحساب ليختفي هذا الخطأ نهائياً</string>
 </resources>

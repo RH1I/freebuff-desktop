@@ -269,7 +269,16 @@ class MainActivity : AppCompatActivity() {
                     }
 
                     is ToastType.PlayerError -> {
-                        runBlocking { ComposeResUtils.getResString(ComposeResUtils.StringType.TIME_OUT_ERROR, type.error) }
+                        // 0_o: bot-check → guide the user to sign in instead of a raw error.
+                        val raw = type.error
+                        if (raw.contains("confirm", ignoreCase = true) ||
+                            raw.contains("bot", ignoreCase = true) ||
+                            raw.contains("Sign in", ignoreCase = true)
+                        ) {
+                            runBlocking { ComposeResUtils.getResString(ComposeResUtils.StringType.PLAYER_ERROR_SIGN_IN_REQUIRED) }
+                        } else {
+                            runBlocking { ComposeResUtils.getResString(ComposeResUtils.StringType.TIME_OUT_ERROR, raw) }
+                        }
                     }
                 },
             )

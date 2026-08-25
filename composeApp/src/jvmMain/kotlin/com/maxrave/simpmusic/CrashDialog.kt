@@ -57,13 +57,13 @@ object CrashDialog {
 
         val stackTrace = StringWriter().also { throwable.printStackTrace(PrintWriter(it)) }.toString()
         val versionInfo = try {
-            "SimpMusic Desktop v${VersionManager.getVersionName()}"
+            "0_o v${VersionManager.getVersionName()}"
         } catch (_: Exception) {
-            "SimpMusic Desktop"
+            "0_o"
         }
 
         val dialog = JDialog().apply {
-            title = "SimpMusic - Unexpected Error"
+            title = "0_o - Unexpected Error"
             isModal = true
             defaultCloseOperation = JDialog.DISPOSE_ON_CLOSE
             preferredSize = Dimension(700, 500)
@@ -76,7 +76,7 @@ object CrashDialog {
 
         // Header
         val headerPanel = JPanel(BorderLayout(8, 4)).apply {
-            val titleLabel = JLabel("SimpMusic has crashed").apply {
+            val titleLabel = JLabel("0_o has crashed").apply {
                 font = font.deriveFont(Font.BOLD, 16f)
             }
             val subtitleLabel = JLabel(

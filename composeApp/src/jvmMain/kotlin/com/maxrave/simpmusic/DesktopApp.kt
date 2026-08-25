@@ -64,6 +64,7 @@ import simpmusic.composeapp.generated.resources.open_app
 import simpmusic.composeapp.generated.resources.open_miniplayer
 import simpmusic.composeapp.generated.resources.quit_app
 import simpmusic.composeapp.generated.resources.time_out_check_internet_connection_or_change_piped_instance_in_settings
+import simpmusic.composeapp.generated.resources.player_error_sign_in_required
 
 /**
  * Any `scheme://…` command-line argument. RFC 3986 §3.1 allows ALPHA followed by
@@ -208,7 +209,17 @@ fun runDesktopApp(args: Array<String> = emptyArray()) {
                 }
 
                 is ToastType.PlayerError -> {
-                    runBlocking { getString(Res.string.time_out_check_internet_connection_or_change_piped_instance_in_settings, type.error) }
+                    // 0_o: detect YouTube's bot-check and guide the user to the
+                    // real fix (signing in) instead of a raw technical error.
+                    val raw = type.error
+                    if (raw.contains("confirm", ignoreCase = true) ||
+                        raw.contains("bot", ignoreCase = true) ||
+                        raw.contains("Sign in", ignoreCase = true)
+                    ) {
+                        runBlocking { getString(Res.string.player_error_sign_in_required) }
+                    } else {
+                        runBlocking { getString(Res.string.time_out_check_internet_connection_or_change_piped_instance_in_settings, raw) }
+                    }
                 }
             },
         )
