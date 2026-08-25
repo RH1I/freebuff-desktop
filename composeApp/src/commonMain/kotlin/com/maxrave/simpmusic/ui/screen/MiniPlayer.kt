@@ -219,22 +219,15 @@ fun MiniPlayer(
         remember {
             mutableStateOf(false)
         }
-    val (progress, setProgress) =
-        remember {
-            mutableFloatStateOf(0f)
-        }
+    // 0_o: keep the State reference — the progress line reads it in its own
+    // scope, so position ticks never recompose the whole mini player.
+    val progressState = remember { mutableFloatStateOf(0f) }
     val (isCrossfading, setIsCrossfading) =
         remember {
             mutableStateOf(false)
         }
 
     val coroutineScope = rememberCoroutineScope()
-
-    val animatedProgress by animateFloatAsState(
-        targetValue = progress,
-        animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec,
-        label = "",
-    )
 
     // Palette state
     val paletteState = rememberPaletteState()
@@ -296,7 +289,7 @@ fun MiniPlayer(
                         } else {
                             0f
                         }
-                    setProgress(prog)
+                    progressState.floatValue = prog
                 }
             }
         job1.join()
@@ -330,7 +323,7 @@ fun MiniPlayer(
 
     if (getPlatform() == Platform.Android) {
         Card(
-            shape = if (isLiquidGlassEnabled == DataStoreManager.TRUE) CircleShape else RoundedCornerShape(12.dp),
+            shape = CircleShape,
             colors =
                 CardDefaults.cardColors(
                     containerColor = if (isLiquidGlassEnabled == DataStoreManager.TRUE) Color.Transparent else background.value,
@@ -359,7 +352,6 @@ fun MiniPlayer(
                                             coroutineScope.launch {
                                                 change.consume()
                                                 offsetY.animateTo(offsetY.value + 2 * dragAmount)
-                                                Logger.w("MiniPlayer", "Dragged ${offsetY.value}")
                                             }
                                         }
                                     },
@@ -369,7 +361,6 @@ fun MiniPlayer(
                                         }
                                     },
                                     onDragEnd = {
-                                        Logger.w("MiniPlayer", "Drag Ended")
                                         coroutineScope.launch {
                                             if (offsetY.value > 70) {
                                                 onClose()
@@ -409,7 +400,6 @@ fun MiniPlayer(
                                                 }
                                             },
                                             onDragCancel = {
-                                                Logger.w("MiniPlayer", "Drag Cancelled")
                                                 coroutineScope.launch {
                                                     if (offsetX.value > 200) {
                                                         sharedViewModel.onUIEvent(UIEvent.Previous)
@@ -420,7 +410,6 @@ fun MiniPlayer(
                                                 }
                                             },
                                             onDragEnd = {
-                                                Logger.w("MiniPlayer", "Drag Ended")
                                                 coroutineScope.launch {
                                                     if (offsetX.value > 200) {
                                                         sharedViewModel.onUIEvent(UIEvent.Previous)
@@ -573,20 +562,12 @@ fun MiniPlayer(
                                 horizontal = 10.dp,
                             ).align(Alignment.BottomCenter),
                 ) {
-                    LinearProgressIndicator(
-                        progress = { animatedProgress },
+                    MiniPlayerProgressLine(
+                        progressState,
                         modifier =
                             Modifier
                                 .fillMaxWidth()
-                                .height(1.dp)
-                                .background(
-                                    color = Color.Transparent,
-                                    shape = RoundedCornerShape(4.dp),
-                                ),
-                        color = textColor,
-                        trackColor = Color.Transparent,
-                        strokeCap = StrokeCap.Round,
-                        drawStopIndicator = {},
+                                .height(2.dp),
                     )
                 }
             }
@@ -1066,4 +1047,29 @@ fun MiniPlayer(
             }
         }
     }
+}
+
+/**
+ * 0_o: the mini player's live progress line, isolated so the position
+ * animation recomposes ONLY this 2dp bar — never the mini player body.
+ */
+@Composable
+private fun MiniPlayerProgressLine(
+    progressState: androidx.compose.runtime.MutableFloatState,
+    modifier: Modifier = Modifier,
+) {
+    val animated by androidx.compose.animation.core.animateFloatAsState(
+        targetValue = progressState.floatValue,
+        animationSpec = androidx.compose.material3.ProgressIndicatorDefaults.ProgressAnimationSpec,
+        label = "MiniProgress",
+    )
+    LinearProgressIndicator(
+        progress = { animated },
+        modifier =
+            modifier
+                .background(
+                    color = Color.Transparent,
+                    shape = RoundedCornerShape(4.dp),
+                ),
+    )
 }

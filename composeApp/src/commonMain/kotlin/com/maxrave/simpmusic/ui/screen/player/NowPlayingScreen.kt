@@ -57,6 +57,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
@@ -115,6 +116,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
+import androidx.compose.runtime.DisposableEffect
+import com.maxrave.simpmusic.visualization.VisualizerView
+import com.maxrave.simpmusic.visualization.VisualizerMode
+import com.maxrave.domain.visualization.VisualizerBus
 import coil3.compose.LocalPlatformContext
 import coil3.request.CachePolicy
 import coil3.request.ImageRequest
@@ -190,6 +195,10 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import simpmusic.composeapp.generated.resources.Res
+import simpmusic.composeapp.generated.resources.viz_off
+import simpmusic.composeapp.generated.resources.viz_bars
+import simpmusic.composeapp.generated.resources.viz_wave
+import simpmusic.composeapp.generated.resources.viz_radial
 import simpmusic.composeapp.generated.resources.artists
 import simpmusic.composeapp.generated.resources.crossfading
 import simpmusic.composeapp.generated.resources.description
@@ -731,6 +740,16 @@ fun NowPlayingScreenContent(
     if (screenDataState.lyricsData != null && controllerState.isPlaying) {
         KeepScreenOn()
     }
+    // 0_o visualizer: cycles OFF -> BARS -> WAVE_AROUND_ART -> RADIAL.
+    var vizModeIndex by rememberSaveable { mutableIntStateOf(0) }
+    val vizModes = VisualizerMode.entries
+    val vizMode = vizModes[vizModeIndex.coerceIn(0, vizModes.lastIndex)]
+    DisposableEffect(vizMode) {
+        VisualizerBus.isEnabled = vizMode != VisualizerMode.OFF
+        onDispose { VisualizerBus.isEnabled = false }
+    }
+    val vizBands by VisualizerBus.bands.collectAsStateWithLifecycle()
+
     Box {
         Column(
             Modifier
@@ -790,11 +809,43 @@ fun NowPlayingScreenContent(
                 ),
         ) {
             Box(modifier = Modifier.fillMaxWidth()) {
+                // === 0_o visualizer behind the artwork (vudio/radial hugging the art) ===
+                if (vizMode != VisualizerMode.OFF) {
+                    VisualizerView(
+                        bands = vizBands,
+                        mode = if (vizMode == VisualizerMode.BARS) VisualizerMode.WAVE_AROUND_ART else vizMode,
+                        modifier =
+                            Modifier
+                                .matchParentSize(),
+                        color = MaterialTheme.colorScheme.primary,
+                        albumCenterFraction = 0.32f,
+                    )
+                }
                 // === Unified ArtworkPager (Spotify-style swipe) ===
                 // ONE HorizontalPager wraps both the fullscreen canvas backdrop AND the
                 // centered square thumbnail. Both layers slide together as a single page
                 // so when the user swipes during canvas mode, they see the next track's
                 // thumbnail enter and the canvas exit in lockstep.
+                CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides Dp.Unspecified) {
+                    TextButton(
+                        onClick = { vizModeIndex = (vizModeIndex + 1) % vizModes.size },
+                        modifier =
+                            Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(top = 4.dp, end = 8.dp),
+                    ) {
+                        Text(
+                            text = when (vizMode) {
+                                VisualizerMode.OFF -> stringResource(Res.string.viz_off)
+                                VisualizerMode.BARS -> stringResource(Res.string.viz_bars)
+                                VisualizerMode.WAVE_AROUND_ART -> stringResource(Res.string.viz_wave)
+                                VisualizerMode.RADIAL -> stringResource(Res.string.viz_radial)
+                            },
+                            style = typo().labelSmall,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                    }
+                }
                 HorizontalPager(
                     state = artworkPagerState,
                     modifier =
