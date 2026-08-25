@@ -100,6 +100,8 @@ import com.maxrave.domain.utils.toTrack
 import com.maxrave.simpmusic.Platform
 import com.maxrave.simpmusic.extension.getScreenSizeInfo
 import com.maxrave.simpmusic.getPlatform
+import com.maxrave.simpmusic.ui.component.OoEmptyState
+import com.maxrave.simpmusic.ui.component.OoEmptyMood
 import com.maxrave.simpmusic.ui.component.CenterLoadingBox
 import com.maxrave.simpmusic.ui.component.MoodCategoryCard
 import com.maxrave.simpmusic.ui.component.rememberHolderPainter
@@ -815,11 +817,10 @@ fun SearchScreen(
                                                         modifier = Modifier.fillMaxSize(),
                                                         contentAlignment = Alignment.Center,
                                                     ) {
-                                                        Text(
-                                                            text = stringResource(Res.string.no_results_found),
-                                                            style = typo().titleMedium,
-                                                            textAlign = TextAlign.Center,
-                                                            modifier = Modifier.fillMaxWidth(),
+                                                        // 0_o signature empty state: the sleeping moon.
+                                                        OoEmptyState(
+                                                            mood = OoEmptyMood.SLEEPING_MOON,
+                                                            message = stringResource(Res.string.no_results_found),
                                                         )
                                                     }
                                                 }

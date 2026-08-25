@@ -68,6 +68,7 @@ import com.maxrave.simpmusic.expect.ui.layerBackdrop
 import com.maxrave.simpmusic.expect.ui.rememberBackdrop
 import com.maxrave.simpmusic.extension.copy
 import com.maxrave.simpmusic.ui.component.AppBottomNavigationBar
+import com.maxrave.simpmusic.ui.component.OoSplash
 import com.maxrave.simpmusic.ui.component.AppNavigationRail
 import com.maxrave.simpmusic.ui.component.LiquidGlassAppBottomNavigationBar
 import com.maxrave.simpmusic.ui.icon.ArrowForwardIos
@@ -134,6 +135,13 @@ fun App(viewModel: SharedViewModel = koinInject()) {
     val isTranslucentBottomBar by viewModel.getTranslucentBottomBar().collectAsStateWithLifecycle(DataStoreManager.FALSE)
     val isLiquidGlassEnabled by viewModel.getEnableLiquidGlass().collectAsStateWithLifecycle(DataStoreManager.FALSE)
     val miniPlayerEnabled by viewModel.getMiniPlayerEnabled().collectAsStateWithLifecycle(DataStoreManager.TRUE)
+
+    // 0_o branded splash: covers the cold-start while Compose warms up.
+    var showSplash by rememberSaveable { mutableStateOf(true) }
+    LaunchedEffect(Unit) {
+        kotlinx.coroutines.delay(1200) // let the first real frames land
+        showSplash = false
+    }
 
     val themeMode by viewModel.getThemeMode().collectAsStateWithLifecycle(DataStoreManager.THEME_MODE_DARK)
     val themeColorSource by viewModel.getThemeColorSource().collectAsStateWithLifecycle(DataStoreManager.THEME_COLOR_DEFAULT)
@@ -343,6 +351,8 @@ fun App(viewModel: SharedViewModel = koinInject()) {
             rememberBackdrop(
                 if (MaterialTheme.colorScheme.background.luminance() > 0.5f) Color.White else Color.Black,
             )
+        Box {
+            OoSplash(visible = showSplash)
         Scaffold(
             bottomBar = {
                 if (!isTablet) {
@@ -634,4 +644,5 @@ if (showNotificationPermissionDialog) {
             },
         )
     }
+        }
 }
