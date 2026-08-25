@@ -376,7 +376,10 @@
     <string name="privacy_and_network_sub">البروكسي، SponsorBlock</string>
     <string name="about_sub">الإصدار والتراخيص</string>
     <string name="back">رجوع</string>
-    <string name="mini_player_toggle">الميني بلاير</string>
+    <string name="mini_player_toggle">الميني بلاير</string>    <string name="viz_off">المرئيات: إيقاف</string>
+    <string name="viz_bars">المرئيات: أعمدة</string>
+    <string name="viz_wave">المرئيات: موجة</string>
+    <string name="viz_radial">المرئيات: دوامة</string>
     <string name="mini_player_toggle_description">إظهار الميني بلاير فوق الشريط السفلي أثناء تشغيل الأغنية</string>
     <string name="cookie_missing_sapisid">هذا الكوكي ينقصه SAPISID — انسخ قائمة الكوكيز كاملة من music.youtube.com وأنت مسجّل دخول</string>
     <string name="cookie_missing_spdc">هذه لا تبدو قيمة sp_dc — انسخ قيمة كوكي sp_dc من open.spotify.com وأنت مسجّل دخول</string>

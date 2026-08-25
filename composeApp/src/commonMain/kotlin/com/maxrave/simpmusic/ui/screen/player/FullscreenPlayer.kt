@@ -92,8 +92,27 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import simpmusic.composeapp.generated.resources.Res
+import simpmusic.composeapp.generated.resources.viz_off
+import simpmusic.composeapp.generated.resources.viz_bars
+import simpmusic.composeapp.generated.resources.viz_wave
+import simpmusic.composeapp.generated.resources.viz_radial
 import simpmusic.composeapp.generated.resources.five_seconds
 import kotlin.math.roundToLong
+import com.maxrave.domain.visualization.VisualizerBus
+
+import com.maxrave.simpmusic.visualization.VisualizerMode
+
+import com.maxrave.simpmusic.visualization.VisualizerView
+
+import com.maxrave.simpmusic.Platform
+import com.maxrave.simpmusic.getPlatform
+
+import androidx.compose.runtime.DisposableEffect
+
+import androidx.compose.runtime.mutableIntStateOf
+
+import androidx.compose.material3.TextButton
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -181,6 +200,17 @@ fun FullscreenPlayer(
         mutableStateOf(true)
     }
 
+    // 0_o visualizer: cycles OFF -> BARS -> WAVE_AROUND_ART -> RADIAL.
+    var vizModeIndex by rememberSaveable { mutableIntStateOf(0) }
+    val vizModes = VisualizerMode.entries
+    val vizMode = vizModes[vizModeIndex.coerceIn(0, vizModes.lastIndex)]
+    DisposableEffect(vizMode, isInPipMode) {
+        VisualizerBus.isEnabled = vizMode != VisualizerMode.OFF && !isInPipMode
+        onDispose { VisualizerBus.isEnabled = false }
+    }
+    val vizBands by VisualizerBus.bands.collectAsStateWithLifecycle()
+    val showVizToggle = getPlatform() == Platform.Android // desktop bands arrive with the lavfi engine
+
     Box {
         MediaPlayerViewWithSubtitle(
             playerName = MAIN_PLAYER,
@@ -196,6 +226,15 @@ fun FullscreenPlayer(
             mainTextStyle = typo().bodyLarge,
             translatedTextStyle = typo().bodyMedium,
         )
+        if (vizMode != VisualizerMode.OFF && !isInPipMode) {
+            VisualizerView(
+                bands = vizBands,
+                mode = vizMode,
+                modifier = Modifier.fillMaxSize(),
+                color = Color.White,
+                albumCenterFraction = 0.35f,
+            )
+        }
         if (!isInPipMode) {
             Row(Modifier.fillMaxSize()) {
                 // Left side
@@ -301,6 +340,28 @@ fun FullscreenPlayer(
                                 )
                             }
                         }
+                    }
+                }
+            }
+            if (showVizToggle && !isInPipMode) {
+                CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides Dp.Unspecified) {
+                    TextButton(
+                        onClick = { vizModeIndex = (vizModeIndex + 1) % (vizModes.size) },
+                        modifier =
+                            Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(top = 64.dp, end = 16.dp),
+                    ) {
+                        Text(
+                            text = when (vizMode) {
+                                VisualizerMode.OFF -> stringResource(Res.string.viz_off)
+                                VisualizerMode.BARS -> stringResource(Res.string.viz_bars)
+                                VisualizerMode.WAVE_AROUND_ART -> stringResource(Res.string.viz_wave)
+                                VisualizerMode.RADIAL -> stringResource(Res.string.viz_radial)
+                            },
+                            style = typo().labelSmall,
+                            color = Color.White,
+                        )
                     }
                 }
             }

@@ -1,6 +1,7 @@
 package com.maxrave.media3.audio
 
 import androidx.media3.common.C
+import com.maxrave.domain.visualization.VisualizerBus
 import androidx.media3.common.audio.AudioProcessor
 import androidx.media3.common.audio.BaseAudioProcessor
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -11,32 +12,6 @@ import kotlin.math.log10
 import kotlin.math.max
 import kotlin.math.pow
 
-/**
- * 0_o visualizer bus — the shared pipe between the audio graph and the UI.
- * [bands] holds ~32 normalised (0f..1f) log-spaced magnitude bands, updated
- * live by [VisualizerAudioProcessor] on Android. Desktop feeds the same shape
- * from its own engine.
- */
-object VisualizerBus {
-    private val _bands = MutableStateFlow(FloatArray(BAND_COUNT))
-    val bands = _bands.asStateFlow()
-
-    /** Only analyse while something is actually watching — saves CPU. */
-    @Volatile
-    var isEnabled: Boolean = false
-
-    internal fun publish(newBands: FloatArray) {
-        if (!isEnabled) return
-        val dst = _bands.value
-        // Smooth toward the new values for a calmer, more premium motion.
-        for (i in dst.indices) {
-            val src = newBands.getOrNull(i) ?: 0f
-            dst[i] = dst[i] * 0.55f + src * 0.45f
-        }
-    }
-
-    const val BAND_COUNT = 32
-}
 
 /**
  * Taps the 16-bit PCM passing through the audio sink, runs a small FFT and

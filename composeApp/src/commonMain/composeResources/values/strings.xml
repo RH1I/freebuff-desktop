@@ -380,7 +380,10 @@
     <string name="privacy_and_network_sub">Proxy, SponsorBlock</string>
     <string name="about_sub">Version and licenses</string>
     <string name="back">Back</string>
-    <string name="mini_player_toggle">Mini player</string>
+    <string name="mini_player_toggle">Mini player</string>    <string name="viz_off">Viz: Off</string>
+    <string name="viz_bars">Viz: Bars</string>
+    <string name="viz_wave">Viz: Wave</string>
+    <string name="viz_radial">Viz: Swirl</string>
     <string name="mini_player_toggle_description">Show the mini player above the bottom bar while a song is playing</string>
     <string name="cookie_login_desktop_hint">No browser inside the desktop app — use the cookie login: tap the icon at the top corner, follow the steps, and paste your cookie.</string>
     <string name="theme_color_wallpaper">Wallpaper</string>

@@ -18,6 +18,9 @@ import kotlin.math.min
 
 /** The three 0_o visualizer flavours. */
 enum class VisualizerMode {
+    /** Visualizer disabled. */
+    OFF,
+
     /** Classic energy columns. */
     BARS,
 
@@ -55,6 +58,7 @@ fun VisualizerView(
         val w = size.width
         val h = size.height
         when (mode) {
+            VisualizerMode.OFF -> return@Canvas
             VisualizerMode.BARS -> {
                 val count = animated.size
                 if (count == 0) return@Canvas
