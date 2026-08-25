@@ -1662,6 +1662,8 @@ class SharedViewModel(
 
     fun getMiniPlayerEnabled() = dataStoreManager.miniPlayerEnabled
 
+    fun getGoldenHourAuto() = dataStoreManager.goldenHourAuto
+
 
     fun getThemeMode() = dataStoreManager.themeMode
 

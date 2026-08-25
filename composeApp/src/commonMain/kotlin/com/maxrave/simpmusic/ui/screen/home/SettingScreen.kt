@@ -192,6 +192,8 @@ import simpmusic.composeapp.generated.resources.about_sub
 import simpmusic.composeapp.generated.resources.back
 import simpmusic.composeapp.generated.resources.mini_player_toggle
 import simpmusic.composeapp.generated.resources.mini_player_toggle_description
+import simpmusic.composeapp.generated.resources.golden_hour_toggle
+import simpmusic.composeapp.generated.resources.golden_hour_description
 import simpmusic.composeapp.generated.resources.add_an_account
 import simpmusic.composeapp.generated.resources.ai
 import simpmusic.composeapp.generated.resources.ai_api_key
@@ -521,6 +523,7 @@ fun SettingScreen(
     val themeMode by sharedViewModel.getThemeMode().collectAsStateWithLifecycle(DataStoreManager.THEME_MODE_DARK)
     val themeColorSource by sharedViewModel.getThemeColorSource().collectAsStateWithLifecycle(DataStoreManager.THEME_COLOR_DEFAULT)
     val miniPlayerEnabled by viewModel.miniPlayerEnabled.collectAsStateWithLifecycle()
+    val goldenHourAuto by viewModel.goldenHourAuto.collectAsStateWithLifecycle()
     val customThemeColorHex by sharedViewModel.getCustomThemeColor().collectAsStateWithLifecycle(DataStoreManager.DEFAULT_THEME_COLOR_HEX)
     var showColorPickerDialog by rememberSaveable { mutableStateOf(false) }
     val discordLoggedIn by viewModel.discordLoggedIn.collectAsStateWithLifecycle()
@@ -611,6 +614,11 @@ fun SettingScreen(
                     title = stringResource(Res.string.mini_player_toggle),
                     subtitle = stringResource(Res.string.mini_player_toggle_description),
                     switch = (miniPlayerEnabled to { viewModel.setMiniPlayerEnabled(it) }),
+                )
+                SettingItem(
+                    title = stringResource(Res.string.golden_hour_toggle),
+                    subtitle = stringResource(Res.string.golden_hour_description),
+                    switch = (goldenHourAuto to { viewModel.setGoldenHourAuto(it) }),
                 )
                 SettingItem(
                     title = stringResource(Res.string.theme),

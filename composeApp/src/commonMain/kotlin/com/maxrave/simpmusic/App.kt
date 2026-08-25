@@ -96,6 +96,7 @@ import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.materials.HazeMaterials
 import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.runBlocking
+import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.format
@@ -136,6 +137,7 @@ fun App(viewModel: SharedViewModel = koinInject()) {
     val isLiquidGlassEnabled by viewModel.getEnableLiquidGlass().collectAsStateWithLifecycle(DataStoreManager.FALSE)
     val miniPlayerEnabled by viewModel.getMiniPlayerEnabled().collectAsStateWithLifecycle(DataStoreManager.TRUE)
     val liveAlbumColor by viewModel.albumColor.collectAsStateWithLifecycle()
+    val goldenHourAuto by viewModel.getGoldenHourAuto().collectAsStateWithLifecycle(DataStoreManager.FALSE)
 
     // 0_o branded splash: covers the cold-start while Compose warms up.
     var showSplash by rememberSaveable { mutableStateOf(true) }
@@ -345,10 +347,18 @@ fun App(viewModel: SharedViewModel = koinInject()) {
         themeMode = themeMode,
         themeColorSource = themeColorSource,
         customThemeColor =
-            if (themeColorSource == DataStoreManager.THEME_COLOR_ALBUM) {
-                liveAlbumColor
-            } else {
-                parseThemeColorHex(customThemeColorHex)
+            when {
+                // 0_o golden hour: between 18:00 and 06:00 the Golden Moon
+                // palette takes over automatically (unless the user pinned a
+                // custom colour or is following the album). Evaluated on each
+                // recomposition of the theme root — app restarts pick it up.
+                goldenHourAuto == DataStoreManager.TRUE &&
+                    themeColorSource != DataStoreManager.THEME_COLOR_ALBUM &&
+                    themeColorSource != DataStoreManager.THEME_COLOR_CUSTOM &&
+                    isGoldenHourNow() -> Color(0xFFC4762E)
+                themeColorSource == DataStoreManager.THEME_COLOR_ALBUM -> liveAlbumColor
+                themeColorSource == DataStoreManager.THEME_COLOR_CUSTOM -> parseThemeColorHex(customThemeColorHex)
+                else -> null
             },
     ) {
         // Backdrop base must match the theme: white page → white glass, dark/AMOLED → black glass.
@@ -651,4 +661,10 @@ if (showNotificationPermissionDialog) {
         )
     }
         }
+}
+
+/** 0_o: true between 18:00 and 06:00 local time — the golden-hour window. */
+fun isGoldenHourNow(): Boolean {
+    val hour = com.maxrave.domain.extension.now().hour
+    return hour >= 18 || hour < 6
 }

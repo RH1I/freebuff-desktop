@@ -1422,6 +1422,11 @@ internal class DataStoreManagerImpl(
             preferences[MINI_PLAYER_ENABLED] ?: TRUE
         }
 
+    override val goldenHourAuto: Flow<String> =
+        settingsDataStore.data.map { preferences ->
+            preferences[GOLDEN_HOUR_AUTO] ?: FALSE
+        }
+
     override suspend fun setBlogNotificationEnabled(enabled: Boolean) {
         withContext(Dispatchers.IO) {
             settingsDataStore.edit { settings ->
@@ -1434,6 +1439,14 @@ internal class DataStoreManagerImpl(
         withContext(Dispatchers.IO) {
             settingsDataStore.edit { settings ->
                 settings[MINI_PLAYER_ENABLED] = if (enabled) TRUE else FALSE
+            }
+        }
+    }
+
+    override suspend fun setGoldenHourAuto(enabled: Boolean) {
+        withContext(Dispatchers.IO) {
+            settingsDataStore.edit { settings ->
+                settings[GOLDEN_HOUR_AUTO] = if (enabled) TRUE else FALSE
             }
         }
     }
@@ -1593,6 +1606,7 @@ internal class DataStoreManagerImpl(
 
         val BLOG_NOTIFICATION_ENABLED = stringPreferencesKey("blog_notification_enabled")
         val MINI_PLAYER_ENABLED = stringPreferencesKey("mini_player_enabled")
+        val GOLDEN_HOUR_AUTO = stringPreferencesKey("golden_hour_auto")
 
         // Auto Backup
         val AUTO_BACKUP_ENABLED = stringPreferencesKey("auto_backup_enabled")

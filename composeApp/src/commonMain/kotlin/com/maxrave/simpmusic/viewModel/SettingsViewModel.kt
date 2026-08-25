@@ -206,6 +206,9 @@ class SettingsViewModel(
     private val _miniPlayerEnabled = MutableStateFlow(true)
     val miniPlayerEnabled: StateFlow<Boolean> = _miniPlayerEnabled
 
+    private val _goldenHourAuto = MutableStateFlow(false)
+    val goldenHourAuto: StateFlow<Boolean> = _goldenHourAuto
+
     // Auto Backup
     private val _autoBackupEnabled = MutableStateFlow<Boolean>(false)
     val autoBackupEnabled: StateFlow<Boolean> = _autoBackupEnabled
@@ -345,6 +348,21 @@ class SettingsViewModel(
         viewModelScope.launch {
             dataStoreManager.setMiniPlayerEnabled(enabled)
             getMiniPlayerEnabled()
+        }
+    }
+
+    private fun getGoldenHourAuto() {
+        viewModelScope.launch {
+            dataStoreManager.goldenHourAuto.collect { enabled ->
+                _goldenHourAuto.value = enabled == DataStoreManager.TRUE
+            }
+        }
+    }
+
+    fun setGoldenHourAuto(enabled: Boolean) {
+        viewModelScope.launch {
+            dataStoreManager.setGoldenHourAuto(enabled)
+            getGoldenHourAuto()
         }
     }
 

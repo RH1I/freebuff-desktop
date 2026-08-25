@@ -383,6 +383,10 @@ interface DataStoreManager {
 
     suspend fun setMiniPlayerEnabled(enabled: Boolean)
 
+    val goldenHourAuto: Flow<String>
+
+    suspend fun setGoldenHourAuto(enabled: Boolean)
+
     // Auto Backup
     val autoBackupEnabled: Flow<String>
 
@@ -436,6 +440,7 @@ interface DataStoreManager {
         const val DEFAULT_THEME_COLOR_HEX = "FF8ECAE6"
 
         const val MINI_PLAYER_ENABLED = "mini_player_enabled"
+        const val GOLDEN_HOUR_AUTO = "golden_hour_auto"
 
         const val CROSSFADE_DURATION_AUTO = 0
 
