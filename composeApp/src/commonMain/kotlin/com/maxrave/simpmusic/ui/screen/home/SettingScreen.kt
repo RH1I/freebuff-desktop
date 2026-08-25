@@ -360,6 +360,7 @@ import simpmusic.composeapp.generated.resources.theme_color
 import simpmusic.composeapp.generated.resources.theme_color_custom
 import simpmusic.composeapp.generated.resources.theme_color_default
 import simpmusic.composeapp.generated.resources.theme_color_golden_moon
+import simpmusic.composeapp.generated.resources.theme_color_album
 import simpmusic.composeapp.generated.resources.theme_color_ink_stars
 import simpmusic.composeapp.generated.resources.theme_color_wallpaper
 import simpmusic.composeapp.generated.resources.theme_mode_dark
@@ -639,6 +640,7 @@ fun SettingScreen(
                         add(DataStoreManager.THEME_COLOR_DEFAULT to stringResource(Res.string.theme_color_default))
                         add(DataStoreManager.THEME_COLOR_GOLDEN_MOON to stringResource(Res.string.theme_color_golden_moon))
                         add(DataStoreManager.THEME_COLOR_INK_STARS to stringResource(Res.string.theme_color_ink_stars))
+                        add(DataStoreManager.THEME_COLOR_ALBUM to stringResource(Res.string.theme_color_album))
                         if (isWallpaperDynamicColorSupported()) {
                             add(DataStoreManager.THEME_COLOR_WALLPAPER to stringResource(Res.string.theme_color_wallpaper))
                         }

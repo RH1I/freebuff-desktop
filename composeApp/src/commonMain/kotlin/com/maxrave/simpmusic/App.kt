@@ -135,6 +135,7 @@ fun App(viewModel: SharedViewModel = koinInject()) {
     val isTranslucentBottomBar by viewModel.getTranslucentBottomBar().collectAsStateWithLifecycle(DataStoreManager.FALSE)
     val isLiquidGlassEnabled by viewModel.getEnableLiquidGlass().collectAsStateWithLifecycle(DataStoreManager.FALSE)
     val miniPlayerEnabled by viewModel.getMiniPlayerEnabled().collectAsStateWithLifecycle(DataStoreManager.TRUE)
+    val liveAlbumColor by viewModel.albumColor.collectAsStateWithLifecycle()
 
     // 0_o branded splash: covers the cold-start while Compose warms up.
     var showSplash by rememberSaveable { mutableStateOf(true) }
@@ -343,7 +344,12 @@ fun App(viewModel: SharedViewModel = koinInject()) {
     AppTheme(
         themeMode = themeMode,
         themeColorSource = themeColorSource,
-        customThemeColor = parseThemeColorHex(customThemeColorHex),
+        customThemeColor =
+            if (themeColorSource == DataStoreManager.THEME_COLOR_ALBUM) {
+                liveAlbumColor
+            } else {
+                parseThemeColorHex(customThemeColorHex)
+            },
     ) {
         // Backdrop base must match the theme: white page → white glass, dark/AMOLED → black glass.
         // Read inside AppTheme so MaterialTheme reflects the resolved scheme (light background is #FFFFFF).

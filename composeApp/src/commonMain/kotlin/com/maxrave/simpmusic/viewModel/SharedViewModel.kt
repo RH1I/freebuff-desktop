@@ -1,6 +1,7 @@
 package com.maxrave.simpmusic.viewModel
 
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewModelScope
 import com.maxrave.common.Config.ALBUM_CLICK
 import com.maxrave.common.Config.DOWNLOAD_CACHE
@@ -106,6 +107,8 @@ import simpmusic.composeapp.generated.resources.updated
 import simpmusic.composeapp.generated.resources.vote_submitted
 import java.io.FileOutputStream
 import kotlin.math.abs
+import kotlin.math.max
+import kotlin.math.min
 import kotlin.reflect.KClass
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -1659,6 +1662,7 @@ class SharedViewModel(
 
     fun getMiniPlayerEnabled() = dataStoreManager.miniPlayerEnabled
 
+
     fun getThemeMode() = dataStoreManager.themeMode
 
     fun getThemeColorSource() = dataStoreManager.themeColorSource
@@ -1753,9 +1757,68 @@ class SharedViewModel(
         }
     }
 
+    private val _albumColor = MutableStateFlow<Color?>(null)
+
+    /** Dominant colour of the current artwork — drives the live album theme. */
+    val albumColor: StateFlow<Color?> = _albumColor
+
     fun setBitmap(bitmap: ImageBitmap?) {
         _nowPlayingScreenData.update {
             it.copy(bitmap = bitmap)
+        }
+        // 0_o: extract the artwork's dominant colour for the live album theme —
+        // saturation-weighted average over a sparse pixel sample (cheap, good enough).
+        viewModelScope.launch {
+            val color =
+                bitmap?.let { bm ->
+                    kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) {
+                        val w = bm.width
+                        val h = bm.height
+                        if (w <= 0 || h <= 0) {
+                            null
+                        } else {
+                            // Read the whole bitmap once (same pattern as the mini
+                            // player's luminance sampler) then walk sparsely.
+                            val pixels = IntArray(w * h)
+                            bm.readPixels(pixels)
+                            var r = 0f
+                            var g = 0f
+                            var b = 0f
+                            var weight = 0f
+                            val step = max(1, min(w, h) / 24)
+                            var y = 0
+                            while (y < h) {
+                                var x = 0
+                                while (x < w) {
+                                    val px = pixels[y * w + x]
+                                    val pr = ((px shr 16) and 0xFF) / 255f
+                                    val pg = ((px shr 8) and 0xFF) / 255f
+                                    val pb = (px and 0xFF) / 255f
+                                    val sat = max(pr, max(pg, pb)) - min(pr, min(pg, pb))
+                                    val lum = 0.2126f * pr + 0.7152f * pg + 0.0722f * pb
+                                    // Favour vivid mid-tones; ignore near-black/near-white/grey.
+                                    val wgt = (sat * sat * 4f) * (1f - abs(lum - 0.5f) * 1.2f).coerceAtLeast(0.05f)
+                                    r += pr * wgt
+                                    g += pg * wgt
+                                    b += pb * wgt
+                                    weight += wgt
+                                    x += step
+                                }
+                                y += step
+                            }
+                            if (weight > 0f) {
+                                Color(
+                                    red = (r / weight).coerceIn(0.15f, 0.92f),
+                                    green = (g / weight).coerceIn(0.12f, 0.9f),
+                                    blue = (b / weight).coerceIn(0.1f, 0.88f),
+                                )
+                            } else {
+                                null
+                            }
+                        }
+                    }
+                }
+            _albumColor.value = color
         }
     }
 
