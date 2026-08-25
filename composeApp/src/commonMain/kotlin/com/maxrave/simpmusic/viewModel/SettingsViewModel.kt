@@ -203,6 +203,9 @@ class SettingsViewModel(
     private val _blogNotificationEnabled = MutableStateFlow(true)
     val blogNotificationEnabled: StateFlow<Boolean> = _blogNotificationEnabled
 
+    private val _miniPlayerEnabled = MutableStateFlow(true)
+    val miniPlayerEnabled: StateFlow<Boolean> = _miniPlayerEnabled
+
     // Auto Backup
     private val _autoBackupEnabled = MutableStateFlow<Boolean>(false)
     val autoBackupEnabled: StateFlow<Boolean> = _autoBackupEnabled
@@ -334,6 +337,21 @@ class SettingsViewModel(
         viewModelScope.launch {
             dataStoreManager.blogNotificationEnabled.collect { enabled ->
                 _blogNotificationEnabled.value = enabled == DataStoreManager.TRUE
+            }
+        }
+    }
+
+    fun setMiniPlayerEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            dataStoreManager.setMiniPlayerEnabled(enabled)
+            getMiniPlayerEnabled()
+        }
+    }
+
+    private fun getMiniPlayerEnabled() {
+        viewModelScope.launch {
+            dataStoreManager.miniPlayerEnabled.collect { enabled ->
+                _miniPlayerEnabled.value = enabled == DataStoreManager.TRUE
             }
         }
     }

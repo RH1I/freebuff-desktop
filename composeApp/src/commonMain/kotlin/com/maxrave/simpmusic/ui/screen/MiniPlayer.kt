@@ -110,6 +110,9 @@ import com.maxrave.simpmusic.extension.hsvToColor
 import com.maxrave.simpmusic.extension.toResizedBitmap
 import com.maxrave.simpmusic.getPlatform
 import com.maxrave.simpmusic.ui.component.ExplicitBadge
+import com.maxrave.simpmusic.ui.component.activeIndexAt
+import com.maxrave.simpmusic.ui.component.TimedLineIndex
+import androidx.compose.runtime.derivedStateOf
 import com.maxrave.simpmusic.ui.component.HeartCheckBox
 import com.maxrave.simpmusic.ui.component.PlayPauseButton
 import com.maxrave.simpmusic.ui.component.PlayerControlLayout
@@ -174,42 +177,40 @@ fun MiniPlayer(
         animationSpec = tween(500),
     )
 
-    LaunchedEffect(luminanceAnimation.value) {
-        Logger.w("GlassDbg", "luminanceAnimation: ${luminanceAnimation.value}")
-    }
-
-    LaunchedEffect(layer, isLiquidGlassEnabled) {
-        val buffer = IntArray(25)
-        while (isActive && isLiquidGlassEnabled == DataStoreManager.TRUE) {
-            try {
-                withContext(Dispatchers.Main) {
-                    val imageBitmap = layer.toImageBitmap()
-                    val thumbnail = imageBitmap.toResizedBitmap(5, 5)
-                    thumbnail.readPixels(buffer)
-                }
-            } catch (e: Exception) {
-                Logger.e(TAG, "Error getting pixels from layer: ${e.message}")
-            }
-            val averageLuminance =
-                (0 until 25).sumOf { index ->
-                    val color = buffer.get(index)
-                    val r = (color shr 16 and 0xFF) / 255f
-                    val g = (color shr 8 and 0xFF) / 255f
-                    val b = (color and 0xFF) / 255f
-                    0.2126 * r + 0.7152 * g + 0.0722 * b
-                } / 25
-            luminanceAnimation.animateTo(
-                averageLuminance.coerceIn(0.3, 0.8).toFloat(),
-                tween(500),
-            )
-            delay(1.seconds)
-        }
-    }
-
     val (songEntity, setSongEntity) =
         remember {
             mutableStateOf<SongEntity?>(null)
         }
+    // 0_o: the artwork luminance barely changes during playback — sampling the
+    // GPU layer every second was pure overhead. Sample once per song instead.
+    LaunchedEffect(layer, isLiquidGlassEnabled, songEntity?.thumbnails) {
+        if (isLiquidGlassEnabled != DataStoreManager.TRUE) return@LaunchedEffect
+        delay(600) // let the artwork settle before sampling
+        val buffer = IntArray(25)
+        try {
+            withContext(Dispatchers.Main) {
+                val imageBitmap = layer.toImageBitmap()
+                val thumbnail = imageBitmap.toResizedBitmap(5, 5)
+                thumbnail.readPixels(buffer)
+            }
+        } catch (e: Exception) {
+            Logger.e(TAG, "Error getting pixels from layer: ${e.message}")
+            return@LaunchedEffect
+        }
+        val averageLuminance =
+            (0 until 25).sumOf { index ->
+                val color = buffer.get(index)
+                val r = (color shr 16 and 0xFF) / 255f
+                val g = (color shr 8 and 0xFF) / 255f
+                val b = (color and 0xFF) / 255f
+                0.2126 * r + 0.7152 * g + 0.0722 * b
+            } / 25
+        luminanceAnimation.animateTo(
+            averageLuminance.coerceIn(0.3, 0.8).toFloat(),
+            tween(500),
+        )
+    }
+
     val (liked, setLiked) =
         remember {
             mutableStateOf(false)
@@ -301,6 +302,30 @@ fun MiniPlayer(
         job1.join()
         job2.join()
         job4.join()
+    }
+
+    // 0_o: current synced-lyric line for the mini player. derivedStateOf only
+    // notifies when the LINE changes (not on every position tick), so this
+    // costs one tiny recomposition per sung line.
+    val miniLyricsData: com.maxrave.simpmusic.viewModel.NowPlayingScreenData by sharedViewModel.nowPlayingScreenData.collectAsStateWithLifecycle()
+    val miniTimedLines =
+        remember(miniLyricsData?.lyricsData?.lyrics?.lines) {
+            miniLyricsData
+                ?.lyricsData?.lyrics?.lines.orEmpty()
+                .mapIndexedNotNull { index, line ->
+                    line.startTimeMs.toLongOrNull()?.let { TimedLineIndex(index, it) }
+                }.sortedBy { it.startTimeMs }
+        }
+    val currentLyricLine by remember(miniTimedLines, miniLyricsData?.lyricsData?.lyrics?.syncType) {
+        derivedStateOf {
+            if (miniLyricsData?.lyricsData?.lyrics?.syncType != "SYNCED" || miniTimedLines.isEmpty()) {
+                null
+            } else {
+                miniTimedLines.activeIndexAt(timelineState.current).takeIf { it >= 0 }?.let { lineIndex ->
+                    miniLyricsData?.lyricsData?.lyrics?.lines?.getOrNull(lineIndex)?.words
+                }
+            }
+        }
     }
 
     if (getPlatform() == Platform.Android) {
@@ -497,7 +522,7 @@ fun MiniPlayer(
                                                 )
                                             }
                                             Text(
-                                                text = (songEntity?.artistName?.connectArtists() ?: ""),
+                                                text = (currentLyricLine ?: songEntity?.artistName?.connectArtists() ?: ""),
                                                 style = typo().bodySmall,
                                                 maxLines = 1,
                                                 color = textColor,

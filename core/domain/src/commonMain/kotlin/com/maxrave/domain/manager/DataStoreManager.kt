@@ -379,6 +379,10 @@ interface DataStoreManager {
 
     suspend fun setBlogNotificationEnabled(enabled: Boolean)
 
+    val miniPlayerEnabled: Flow<String>
+
+    suspend fun setMiniPlayerEnabled(enabled: Boolean)
+
     // Auto Backup
     val autoBackupEnabled: Flow<String>
 
@@ -429,6 +433,8 @@ interface DataStoreManager {
         const val THEME_COLOR_INK_STARS = "INK_STARS"
 
         const val DEFAULT_THEME_COLOR_HEX = "FF8ECAE6"
+
+        const val MINI_PLAYER_ENABLED = "mini_player_enabled"
 
         const val CROSSFADE_DURATION_AUTO = 0
 

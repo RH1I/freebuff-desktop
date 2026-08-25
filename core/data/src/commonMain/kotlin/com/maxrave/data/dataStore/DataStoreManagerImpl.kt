@@ -1417,10 +1417,23 @@ internal class DataStoreManagerImpl(
             preferences[BLOG_NOTIFICATION_ENABLED] ?: TRUE
         }
 
+    override val miniPlayerEnabled: Flow<String> =
+        settingsDataStore.data.map { preferences ->
+            preferences[MINI_PLAYER_ENABLED] ?: TRUE
+        }
+
     override suspend fun setBlogNotificationEnabled(enabled: Boolean) {
         withContext(Dispatchers.IO) {
             settingsDataStore.edit { settings ->
                 settings[BLOG_NOTIFICATION_ENABLED] = if (enabled) TRUE else FALSE
+            }
+        }
+    }
+
+    override suspend fun setMiniPlayerEnabled(enabled: Boolean) {
+        withContext(Dispatchers.IO) {
+            settingsDataStore.edit { settings ->
+                settings[MINI_PLAYER_ENABLED] = if (enabled) TRUE else FALSE
             }
         }
     }
@@ -1579,6 +1592,7 @@ internal class DataStoreManagerImpl(
         val LOCAL_TRACKING_ENABLED = stringPreferencesKey("local_tracking_enabled")
 
         val BLOG_NOTIFICATION_ENABLED = stringPreferencesKey("blog_notification_enabled")
+        val MINI_PLAYER_ENABLED = stringPreferencesKey("mini_player_enabled")
 
         // Auto Backup
         val AUTO_BACKUP_ENABLED = stringPreferencesKey("auto_backup_enabled")

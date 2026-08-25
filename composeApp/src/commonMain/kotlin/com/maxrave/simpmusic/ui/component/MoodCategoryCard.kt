@@ -26,7 +26,7 @@ import com.maxrave.simpmusic.extension.angledGradientBackground
 import com.maxrave.simpmusic.ui.theme.typo
 import org.jetbrains.compose.resources.painterResource
 import simpmusic.composeapp.generated.resources.Res
-import simpmusic.composeapp.generated.resources.monochrome
+import simpmusic.composeapp.generated.resources.circle_app_icon
 
 /**
  * A "Moods & Genres" browse category tile: the [playlistTitleGradient] and SimpMusic badge of an
@@ -43,7 +43,7 @@ fun MoodCategoryCard(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
-    val badge = painterResource(Res.drawable.monochrome)
+    val badge = painterResource(Res.drawable.circle_app_icon)
     Box(
         modifier =
             modifier

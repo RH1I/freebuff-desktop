@@ -133,6 +133,7 @@ fun App(viewModel: SharedViewModel = koinInject()) {
 
     val isTranslucentBottomBar by viewModel.getTranslucentBottomBar().collectAsStateWithLifecycle(DataStoreManager.FALSE)
     val isLiquidGlassEnabled by viewModel.getEnableLiquidGlass().collectAsStateWithLifecycle(DataStoreManager.FALSE)
+    val miniPlayerEnabled by viewModel.getMiniPlayerEnabled().collectAsStateWithLifecycle(DataStoreManager.TRUE)
 
     val themeMode by viewModel.getThemeMode().collectAsStateWithLifecycle(DataStoreManager.THEME_MODE_DARK)
     val themeColorSource by viewModel.getThemeColorSource().collectAsStateWithLifecycle(DataStoreManager.THEME_COLOR_DEFAULT)
@@ -352,7 +353,7 @@ fun App(viewModel: SharedViewModel = koinInject()) {
                     ) {
                         Column {
                             AnimatedVisibility(
-                                isShowMiniPlayer && isLiquidGlassEnabled == DataStoreManager.FALSE,
+                                isShowMiniPlayer && miniPlayerEnabled == DataStoreManager.TRUE && isLiquidGlassEnabled == DataStoreManager.FALSE,
                                 enter = fadeIn() + slideInHorizontally(),
                                 exit = fadeOut(),
                             ) {
@@ -457,7 +458,7 @@ fun App(viewModel: SharedViewModel = koinInject()) {
                                     Modifier
                                         .padding(innerPadding)
                                         .align(Alignment.BottomCenter),
-                                visible = isShowMiniPlayer && isTablet && !isInFullscreen,
+                                visible = isShowMiniPlayer && miniPlayerEnabled == DataStoreManager.TRUE && isTablet && !isInFullscreen,
                                 enter = fadeIn() + slideInHorizontally(),
                                 exit = fadeOut(),
                             ) {

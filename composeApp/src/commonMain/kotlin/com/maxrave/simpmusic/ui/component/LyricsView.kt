@@ -129,7 +129,7 @@ private val DimOriginalColor = Color.LightGray.copy(alpha = 0.35f)
 private val DimTranslatedColor = Color(0xFF97971A).copy(alpha = 0.3f)
 private val DimRichPendingColor = Color.LightGray.copy(alpha = 0.6f)
 
-private data class TimedLineIndex(
+internal data class TimedLineIndex(
     val index: Int,
     val startTimeMs: Long,
 )
@@ -143,7 +143,7 @@ private data class TimedLineIndex(
  *  - nowMs strictly before the first start time -> -1
  *  - nowMs after the last start time -> the last entry's original index (sticky last line)
  */
-private fun List<TimedLineIndex>.activeIndexAt(nowMs: Long): Int {
+internal fun List<TimedLineIndex>.activeIndexAt(nowMs: Long): Int {
     if (isEmpty()) return -1
     if (nowMs < first().startTimeMs) return -1
     // Binary search for the last item whose startTimeMs <= nowMs.

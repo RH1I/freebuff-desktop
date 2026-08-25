@@ -190,6 +190,8 @@ import simpmusic.composeapp.generated.resources.privacy_and_network
 import simpmusic.composeapp.generated.resources.privacy_and_network_sub
 import simpmusic.composeapp.generated.resources.about_sub
 import simpmusic.composeapp.generated.resources.back
+import simpmusic.composeapp.generated.resources.mini_player_toggle
+import simpmusic.composeapp.generated.resources.mini_player_toggle_description
 import simpmusic.composeapp.generated.resources.add_an_account
 import simpmusic.composeapp.generated.resources.ai
 import simpmusic.composeapp.generated.resources.ai_api_key
@@ -517,6 +519,7 @@ fun SettingScreen(
     val enableLiquidGlass by viewModel.enableLiquidGlass.collectAsStateWithLifecycle()
     val themeMode by sharedViewModel.getThemeMode().collectAsStateWithLifecycle(DataStoreManager.THEME_MODE_DARK)
     val themeColorSource by sharedViewModel.getThemeColorSource().collectAsStateWithLifecycle(DataStoreManager.THEME_COLOR_DEFAULT)
+    val miniPlayerEnabled by viewModel.miniPlayerEnabled.collectAsStateWithLifecycle()
     val customThemeColorHex by sharedViewModel.getCustomThemeColor().collectAsStateWithLifecycle(DataStoreManager.DEFAULT_THEME_COLOR_HEX)
     var showColorPickerDialog by rememberSaveable { mutableStateOf(false) }
     val discordLoggedIn by viewModel.discordLoggedIn.collectAsStateWithLifecycle()
@@ -603,6 +606,11 @@ fun SettingScreen(
                         DataStoreManager.THEME_MODE_DARK to stringResource(Res.string.theme_mode_dark),
                         DataStoreManager.THEME_MODE_LIGHT to stringResource(Res.string.theme_mode_light),
                     )
+                SettingItem(
+                    title = stringResource(Res.string.mini_player_toggle),
+                    subtitle = stringResource(Res.string.mini_player_toggle_description),
+                    switch = (miniPlayerEnabled to { viewModel.setMiniPlayerEnabled(it) }),
+                )
                 SettingItem(
                     title = stringResource(Res.string.theme),
                     subtitle = themeModeLabels.firstOrNull { it.first == themeMode }?.second ?: "",
