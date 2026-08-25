@@ -53,6 +53,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import simpmusic.composeapp.generated.resources.Res
 import simpmusic.composeapp.generated.resources.log_in_to_spotify
+import simpmusic.composeapp.generated.resources.cookie_missing_spdc
 import simpmusic.composeapp.generated.resources.login_success
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
@@ -141,6 +142,12 @@ fun SpotifyLoginScreen(
                             },
                             onDone = { spdc ->
                                 devLoginSheet = false
+                                // 0_o: a pasted sp_dc value is a long opaque token —
+                                // anything shorter is clearly not one.
+                                if (spdc.length < 30) {
+                                    viewModel.makeToast(getStringBlocking(Res.string.cookie_missing_spdc))
+                                    return@DevLogInBottomSheet
+                                }
                                 val spdcText = "sp_dc=$spdc"
                                 viewModel.saveSpotifySpdc(spdcText)
                                 viewModel.makeToast(getStringBlocking(Res.string.login_success))

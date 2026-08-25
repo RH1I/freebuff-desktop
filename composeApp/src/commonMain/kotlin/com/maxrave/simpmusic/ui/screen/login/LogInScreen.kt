@@ -52,6 +52,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import simpmusic.composeapp.generated.resources.Res
 import simpmusic.composeapp.generated.resources.log_in
+import simpmusic.composeapp.generated.resources.cookie_missing_sapisid
 import simpmusic.composeapp.generated.resources.login_failed
 import simpmusic.composeapp.generated.resources.login_success
 
@@ -120,6 +121,12 @@ fun LoginScreen(
                             },
                             onDone = { cookie ->
                                 coroutineScope.launch {
+                                    // 0_o: validate before touching any state —
+                                    // a YouTube login cookie must contain SAPISID.
+                                    if (!cookie.contains("SAPISID")) {
+                                        viewModel.makeToast(getString(Res.string.cookie_missing_sapisid))
+                                        return@launch
+                                    }
                                     val success = settingsViewModel.addAccount(cookie)
                                     if (success) {
                                         viewModel.makeToast(getString(Res.string.login_success))
@@ -137,9 +144,16 @@ fun LoginScreen(
                 Logger.d("LogInScreen", "Current URL: $url")
                 if (url == Config.YOUTUBE_MUSIC_MAIN_URL) {
                     coroutineScope.launch {
+                        val cookieText =
+                            createWebViewCookieManager().getCookie(url)
+                        // 0_o: validate before touching any state.
+                        if (cookieText.isNotEmpty() && !cookieText.contains("SAPISID")) {
+                            viewModel.makeToast(getString(Res.string.cookie_missing_sapisid))
+                            createWebViewCookieManager().removeAllCookies()
+                            return@launch
+                        }
                         val success =
-                            createWebViewCookieManager()
-                                .getCookie(url)
+                            cookieText
                                 .takeIf {
                                     it.isNotEmpty()
                                 }?.let {
