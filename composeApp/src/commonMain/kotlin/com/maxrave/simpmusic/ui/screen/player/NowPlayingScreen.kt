@@ -130,6 +130,16 @@ import com.maxrave.common.Config.MAIN_PLAYER
 import com.maxrave.domain.mediaservice.handler.MediaPlayerHandler
 import com.maxrave.domain.mediaservice.handler.RepeatState
 import com.maxrave.logger.Logger
+import com.maxrave.simpmusic.ui.icon.ContentCopy
+import simpmusic.composeapp.generated.resources.copy_title_artist
+import simpmusic.composeapp.generated.resources.copy_translated_lyrics
+import simpmusic.composeapp.generated.resources.copy_lyrics
+import simpmusic.composeapp.generated.resources.copied_to_clipboard
+import org.jetbrains.compose.resources.getString
+import kotlinx.coroutines.runBlocking
+import com.maxrave.simpmusic.expect.copyToClipboard
+import multiplatform.network.cmptoast.showToast
+import multiplatform.network.cmptoast.ToastGravity
 import com.maxrave.simpmusic.Platform
 import com.maxrave.simpmusic.expect.toggleMiniPlayer
 import com.maxrave.simpmusic.expect.ui.MediaPlayerView
@@ -2239,6 +2249,87 @@ fun NowPlayingScreenContent(
                                     }
 
                                     Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.End) {
+                                        // 0_o: one-tap copy for lyrics (and their translation).
+                                        val lyricsCopyText =
+                                            screenDataState.lyricsData?.lyrics?.lines
+                                                ?.joinToString("\n") { it.words }
+                                                .orEmpty()
+                                        val translatedCopyText =
+                                            screenDataState.lyricsData?.translatedLyrics?.first?.lines
+                                                ?.joinToString("\n") { it.words }
+                                                .orEmpty()
+                                        Row(
+                                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                            modifier = Modifier.padding(horizontal = 24.dp, vertical = 4.dp),
+                                        ) {
+                                            if (lyricsCopyText.isNotBlank()) {
+                                                CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides Dp.Unspecified) {
+                                                    TextButton(
+                                                        onClick = {
+                                                            copyToClipboard("lyrics", lyricsCopyText)
+                                                            showToast(
+                                                                runBlocking { getString(Res.string.copied_to_clipboard) },
+                                                                ToastGravity.Bottom,
+                                                            )
+                                                        },
+                                                    ) {
+                                                        Icon(
+                                                            imageVector = SimpIcons.ContentCopy,
+                                                            contentDescription = stringResource(Res.string.copy_lyrics),
+                                                            tint = Color.White,
+                                                            modifier = Modifier.size(14.dp),
+                                                        )
+                                                        Spacer(Modifier.width(4.dp))
+                                                        Text(
+                                                            text = stringResource(Res.string.copy_lyrics),
+                                                            style = typo().bodySmall,
+                                                            color = Color.White,
+                                                        )
+                                                    }
+                                                }
+                                            }
+                                            // 0_o: copy "title — artist" alongside the lyrics.
+                                            val titleArtist =
+                                                screenDataState.artistName.takeIf { it.isNotBlank() }
+                                                    ?.let { "${screenDataState.nowPlayingTitle} — $it" }
+                                                    ?: screenDataState.nowPlayingTitle
+                                            CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides Dp.Unspecified) {
+                                                TextButton(
+                                                    onClick = {
+                                                        copyToClipboard("title", titleArtist)
+                                                        showToast(
+                                                            runBlocking { getString(Res.string.copied_to_clipboard) },
+                                                            ToastGravity.Bottom,
+                                                        )
+                                                    },
+                                                ) {
+                                                    Text(
+                                                        text = stringResource(Res.string.copy_title_artist),
+                                                        style = typo().bodySmall,
+                                                        color = Color.White,
+                                                    )
+                                                }
+                                            }
+                                            if (translatedCopyText.isNotBlank()) {
+                                                CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides Dp.Unspecified) {
+                                                    TextButton(
+                                                        onClick = {
+                                                            copyToClipboard("translated", translatedCopyText)
+                                                            showToast(
+                                                                runBlocking { getString(Res.string.copied_to_clipboard) },
+                                                                ToastGravity.Bottom,
+                                                            )
+                                                        },
+                                                    ) {
+                                                        Text(
+                                                            text = stringResource(Res.string.copy_translated_lyrics),
+                                                            style = typo().bodySmall,
+                                                            color = Color.White,
+                                                        )
+                                                    }
+                                                }
+                                            }
+                                        }
                                         Text(
                                             text =
                                                 when (screenDataState.lyricsData?.lyrics?.syncType) {

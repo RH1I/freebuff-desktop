@@ -11,6 +11,10 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.draw.blur
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -311,6 +315,30 @@ fun LyricsView(
                                 }
 
                             if (parsedLine != null) {
+                                // 0_o Apple-recipe depth: the active line breathes at full
+                                // weight, past lines recede (smaller, dimmer, blurred),
+                                // future lines wait quietly.
+                                val lineState =
+                                    when {
+                                        index == currentLineIndex -> 1f
+                                        index < currentLineIndex -> 0f
+                                        else -> -1f
+                                    }
+                                val depthScale by animateFloatAsState(
+                                    targetValue = if (lineState == 1f) 1f else 0.94f,
+                                    animationSpec = spring(dampingRatio = 0.8f, stiffness = 300f),
+                                    label = "lineScale",
+                                )
+                                val depthAlpha by animateFloatAsState(
+                                    targetValue =
+                                        when (lineState) {
+                                            1f -> 1f
+                                            0f -> 0.55f
+                                            else -> 0.38f
+                                        },
+                                    animationSpec = tween(250),
+                                    label = "lineAlpha",
+                                )
                                 RichSyncLyricsLineItem(
                                     parsedLine = parsedLine,
                                     translatedWords = translatedWords,
@@ -318,12 +346,97 @@ fun LyricsView(
                                     isCurrent = index == currentLineIndex,
                                     modifier =
                                         Modifier
+                                            .graphicsLayer {
+                                                scaleX = depthScale
+                                                scaleY = depthScale
+                                                alpha = depthAlpha
+                                                // Past lines get a soft depth-of-field blur.
+                                                shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp)
+                                                clip = lineState == 0f
+                                            }
+                                            .then(
+                                                if (lineState == 0f && index < currentLineIndex) {
+                                                    Modifier.blur(3.dp)
+                                                } else {
+                                                    Modifier
+                                                },
+                                            )
                                             .clickable {
                                                 onLineClick(line.startTimeMs.toFloat() * 100 / timeLine.value.total)
                                             },
                                 )
+
+                                // 0_o Apple-recipe interlude dots: when the next line is
+                                // far away (long instrumental gap), pulse three dots so
+                                // the silence feels intentional, not broken.
+                                val nextTimed =
+                                    timedLineIndexes.firstOrNull { it.index > index }
+                                val thisEnd =
+                                    line.endTimeMs.toLongOrNull()
+                                        ?: line.startTimeMs.toLongOrNull()?.plus(4_000L)
+                                        ?: 0L
+                                val nextStart = nextTimed?.startTimeMs ?: 0L
+                                if (index == currentLineIndex && nextStart - thisEnd > 3_000L) {
+                                    val pulse = rememberInfiniteTransition(label = "interlude")
+                                    val dotAlpha =
+                                        pulse.animateFloat(
+                                            initialValue = 0.25f,
+                                            targetValue = 1f,
+                                            animationSpec = infiniteRepeatable(
+                                                tween(700, easing = androidx.compose.animation.core.LinearEasing),
+                                                RepeatMode.Reverse,
+                                            ),
+                                            label = "dot",
+                                        )
+                                    Row(
+                                        modifier =
+                                            Modifier
+                                                .padding(start = 6.dp, top = 10.dp, bottom = 6.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    ) {
+                                        repeat(3) { dot ->
+                                            androidx.compose.foundation.Canvas(
+                                                modifier =
+                                                    Modifier
+                                                        .size(10.dp)
+                                                        .padding(1.dp),
+                                            ) {
+                                                drawCircle(
+                                                    color = androidx.compose.ui.graphics.Color.White.copy(
+                                                        alpha = dotAlpha.value.let {
+                                                            // stagger: each dot chases the previous
+                                                            val shifted = (it + dot * 0.33f) % 1f
+                                                            0.25f + 0.75f * shifted
+                                                        },
+                                                    ),
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
                             } else {
                                 // Fallback to regular line item if parsing fails
+                                val lineState =
+                                    when {
+                                        index == currentLineIndex -> 1f
+                                        index < currentLineIndex -> 0f
+                                        else -> -1f
+                                    }
+                                val depthScale by animateFloatAsState(
+                                    targetValue = if (lineState == 1f) 1f else 0.94f,
+                                    animationSpec = spring(dampingRatio = 0.8f, stiffness = 300f),
+                                    label = "lineScaleFallback",
+                                )
+                                val depthAlpha by animateFloatAsState(
+                                    targetValue =
+                                        when (lineState) {
+                                            1f -> 1f
+                                            0f -> 0.55f
+                                            else -> 0.38f
+                                        },
+                                    animationSpec = tween(250),
+                                    label = "lineAlphaFallback",
+                                )
                                 LyricsLineItem(
                                     originalWords = words,
                                     translatedWords = translatedWords,
@@ -331,6 +444,11 @@ fun LyricsView(
                                     isCurrent = index == currentLineIndex,
                                     modifier =
                                         Modifier
+                                            .graphicsLayer {
+                                                scaleX = depthScale
+                                                scaleY = depthScale
+                                                alpha = depthAlpha
+                                            }
                                             .clickable {
                                                 onLineClick(line.startTimeMs.toFloat() * 100 / timeLine.value.total)
                                             },

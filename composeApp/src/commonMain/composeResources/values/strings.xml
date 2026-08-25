@@ -384,6 +384,9 @@
     <string name="viz_bars">Viz: Bars</string>
     <string name="viz_wave">Viz: Wave</string>
     <string name="viz_radial">Viz: Swirl</string>
+    <string name="copy_lyrics">Copy lyrics</string>
+    <string name="copy_translated_lyrics">Copy translated lyrics</string>
+    <string name="copy_title_artist">Copy title &amp; artist</string>
     <string name="mini_player_toggle_description">Show the mini player above the bottom bar while a song is playing</string>
     <string name="cookie_login_desktop_hint">No browser inside the desktop app — use the cookie login: tap the icon at the top corner, follow the steps, and paste your cookie.</string>
     <string name="theme_color_wallpaper">Wallpaper</string>
