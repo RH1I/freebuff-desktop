@@ -451,7 +451,7 @@ private fun provideRendererFactory(context: Context): DefaultRenderersFactory =
                 .setEnableAudioTrackPlaybackParams(enableAudioTrackPlaybackParams)
                 .setAudioProcessorChain(
                     DefaultAudioSink.DefaultAudioProcessorChain(
-                        emptyArray(),
+                        arrayOf(com.maxrave.media3.audio.VisualizerAudioProcessor()),
                         SilenceSkippingAudioProcessor(
                             2_000_000,
                             (20_000 / 2_000_000).toFloat(),
