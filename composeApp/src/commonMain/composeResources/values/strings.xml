@@ -369,6 +369,17 @@
     <string name="player_error_sign_in_required">YouTube is asking to verify you\'re not a bot — sign in from Settings → Account to fix this permanently</string>
     <string name="cookie_missing_sapisid">This cookie is missing SAPISID — copy the FULL cookie list from music.youtube.com while signed in</string>
     <string name="cookie_missing_spdc">This doesn\'t look like an sp_dc value — copy the sp_dc cookie\'s value from open.spotify.com while signed in</string>
+    <string name="accounts_and_integrations">Accounts &amp; integrations</string>
+    <string name="accounts_and_integrations_sub">YouTube, Spotify, Discord, Last.fm, AI</string>
+    <string name="playback_and_audio">Playback &amp; audio</string>
+    <string name="playback_and_audio_sub">Player, crossfade, equalizer, lyrics</string>
+    <string name="appearance_sub">Themes, language, interface</string>
+    <string name="library_and_storage">Library &amp; storage</string>
+    <string name="library_and_storage_sub">Content, cache, backups</string>
+    <string name="privacy_and_network">Privacy &amp; network</string>
+    <string name="privacy_and_network_sub">Proxy, SponsorBlock</string>
+    <string name="about_sub">Version and licenses</string>
+    <string name="back">Back</string>
     <string name="cookie_login_desktop_hint">No browser inside the desktop app — use the cookie login: tap the icon at the top corner, follow the steps, and paste your cookie.</string>
     <string name="theme_color_wallpaper">Wallpaper</string>
     <string name="theme_color_custom">Custom</string>

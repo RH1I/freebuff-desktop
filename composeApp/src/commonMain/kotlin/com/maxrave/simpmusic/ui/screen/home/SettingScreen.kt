@@ -32,6 +32,8 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -42,6 +44,8 @@ import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -69,6 +73,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
@@ -124,6 +129,11 @@ import com.maxrave.simpmusic.ui.icon.Error
 import com.maxrave.simpmusic.ui.icon.PeopleAlt
 import com.maxrave.simpmusic.ui.icon.PlaylistAdd
 import com.maxrave.simpmusic.ui.icon.SimpIcons
+import com.maxrave.simpmusic.ui.icon.Security
+import com.maxrave.simpmusic.ui.icon.PlayCircle
+import com.maxrave.simpmusic.ui.icon.Palette
+import com.maxrave.simpmusic.ui.icon.LibraryMusic
+import com.maxrave.simpmusic.ui.icon.Info
 import com.maxrave.simpmusic.ui.navigation.destination.home.CreditDestination
 import com.maxrave.simpmusic.ui.navigation.destination.login.DiscordLoginDestination
 import com.maxrave.simpmusic.ui.navigation.destination.login.LastfmLoginDestination
@@ -169,6 +179,17 @@ import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import simpmusic.composeapp.generated.resources.Res
 import simpmusic.composeapp.generated.resources.about_us
+import simpmusic.composeapp.generated.resources.accounts_and_integrations
+import simpmusic.composeapp.generated.resources.accounts_and_integrations_sub
+import simpmusic.composeapp.generated.resources.playback_and_audio
+import simpmusic.composeapp.generated.resources.playback_and_audio_sub
+import simpmusic.composeapp.generated.resources.appearance_sub
+import simpmusic.composeapp.generated.resources.library_and_storage
+import simpmusic.composeapp.generated.resources.library_and_storage_sub
+import simpmusic.composeapp.generated.resources.privacy_and_network
+import simpmusic.composeapp.generated.resources.privacy_and_network_sub
+import simpmusic.composeapp.generated.resources.about_sub
+import simpmusic.composeapp.generated.resources.back
 import simpmusic.composeapp.generated.resources.add_an_account
 import simpmusic.composeapp.generated.resources.ai
 import simpmusic.composeapp.generated.resources.ai_api_key
@@ -516,6 +537,9 @@ fun SettingScreen(
             blurEnabled = true,
         )
 
+    var openSection by rememberSaveable {
+        mutableStateOf<String?>(null)
+    }
     var showYouTubeAccountDialog by rememberSaveable {
         mutableStateOf(false)
     }
@@ -532,13 +556,40 @@ fun SettingScreen(
         viewModel.getThumbCacheSize(platformContext)
     }
 
-    LazyColumn(
+    if (openSection == null) {
+        // ---------- 0_o Settings Hub ----------
+        Column(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .padding(top = 64.dp)
+                    .verticalScroll(rememberScrollState()),
+        ) {
+            Spacer(Modifier.height(12.dp))
+            SettingsHubCard(SimpIcons.PeopleAlt, Res.string.accounts_and_integrations, Res.string.accounts_and_integrations_sub) { openSection = "accounts" }
+            SettingsHubCard(SimpIcons.PlayCircle, Res.string.playback_and_audio, Res.string.playback_and_audio_sub) { openSection = "playback" }
+            SettingsHubCard(SimpIcons.Palette, Res.string.user_interface, Res.string.appearance_sub) { openSection = "appearance" }
+            SettingsHubCard(SimpIcons.LibraryMusic, Res.string.library_and_storage, Res.string.library_and_storage_sub) { openSection = "library" }
+            SettingsHubCard(SimpIcons.Security, Res.string.privacy_and_network, Res.string.privacy_and_network_sub) { openSection = "privacy" }
+            SettingsHubCard(SimpIcons.Info, Res.string.about_us, Res.string.about_sub) { openSection = "about" }
+            Spacer(Modifier.height(40.dp))
+        }
+    } else {
+        LazyColumn(
         contentPadding = innerPadding,
         modifier =
             Modifier
                 .padding(horizontal = 16.dp)
                 .hazeSource(hazeState),
     ) {
+        item(key = "back_header") {
+            SettingItem(
+                title = stringResource(Res.string.back),
+                onClick = { openSection = null },
+            )
+        }
+
         item {
             Spacer(Modifier.height(64.dp))
         }
@@ -2181,6 +2232,8 @@ fun SettingScreen(
             EndOfPage()
         }
     }
+    }
+
     importState?.let { progress ->
         ImportProgressDialog(
             progress = progress,
@@ -2868,4 +2921,50 @@ private fun ImportProgressDialog(
             }
         },
     )
+}
+
+/** 0_o settings hub card. */
+@Composable
+fun SettingsHubCard(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    title: org.jetbrains.compose.resources.StringResource,
+    subtitle: org.jetbrains.compose.resources.StringResource,
+    onClick: () -> Unit,
+) {
+    Card(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(vertical = 6.dp)
+                .clickable(onClick = onClick),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors().copy(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 18.dp, vertical = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(26.dp),
+            )
+            Spacer(Modifier.width(16.dp))
+            Column(Modifier.weight(1f)) {
+                Text(stringResource(title), style = typo().titleSmall)
+                Text(
+                    stringResource(subtitle),
+                    style = typo().bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Icon(
+                imageVector = SimpIcons.ArrowBackIosNew,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(16.dp).graphicsLayer(scaleX = -1f),
+            )
+        }
+    }
 }

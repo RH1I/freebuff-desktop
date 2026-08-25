@@ -365,6 +365,17 @@
     <string name="cookie_login_steps_discord">1) افتح discord.com في متصفحك وسجّل دخولك\n2) اضغط F12 ← Application ← Local Storage ← انسخ قيمة token\n3) الصقها هنا</string>
     <string name="cookie_login_desktop_hint">تطبيق الديسكتوب لا يحتوي متصفحاً مدمجاً — استخدم تسجيل الدخول بالكوكيز: اضغط أيقونة الزاوية العلوية، اتبع الخطوات، والصق الكوكيز.</string>
     <string name="player_error_sign_in_required">يوتيوب يطلب التحقق أنك لست بوتاً — سجّل دخولك من الإعدادات ← الحساب ليختفي هذا الخطأ نهائياً</string>
+    <string name="accounts_and_integrations">الحسابات والتكاملات</string>
+    <string name="accounts_and_integrations_sub">يوتيوب، سبوتيفاي، ديسكورد، Last.fm، الذكاء الاصطناعي</string>
+    <string name="playback_and_audio">التشغيل والصوت</string>
+    <string name="playback_and_audio_sub">المشغل، الدمج، الصوت، الكلمات</string>
+    <string name="appearance_sub">الثيمات، اللغة، الواجهة</string>
+    <string name="library_and_storage">المكتبة والتخزين</string>
+    <string name="library_and_storage_sub">المحتوى، الكاش، النسخ الاحتياطي</string>
+    <string name="privacy_and_network">الخصوصية والشبكة</string>
+    <string name="privacy_and_network_sub">البروكسي، SponsorBlock</string>
+    <string name="about_sub">الإصدار والتراخيص</string>
+    <string name="back">رجوع</string>
     <string name="cookie_missing_sapisid">هذا الكوكي ينقصه SAPISID — انسخ قائمة الكوكيز كاملة من music.youtube.com وأنت مسجّل دخول</string>
     <string name="cookie_missing_spdc">هذه لا تبدو قيمة sp_dc — انسخ قيمة كوكي sp_dc من open.spotify.com وأنت مسجّل دخول</string>
 </resources>
