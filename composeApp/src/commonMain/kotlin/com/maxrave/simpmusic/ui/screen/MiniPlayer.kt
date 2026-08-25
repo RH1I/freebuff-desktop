@@ -384,6 +384,9 @@ fun MiniPlayer(
                         Row(
                             modifier =
                                 Modifier
+                                    // 0_o: pill-safe horizontal padding — the circular
+                                    // ends must never clip the artwork or text.
+                                    .padding(horizontal = 14.dp)
                                     .offset { IntOffset(offsetX.value.roundToInt(), 0) }
                                     .pointerInput(Unit) {
                                         detectHorizontalDragGestures(
@@ -396,8 +399,7 @@ fun MiniPlayer(
                                                 coroutineScope.launch {
                                                     change.consume()
                                                     offsetX.animateTo(offsetX.value + dragAmount * 2)
-                                                    Logger.w("MiniPlayer", "Dragged ${offsetX.value}")
-                                                }
+                                                                                                    }
                                             },
                                             onDragCancel = {
                                                 coroutineScope.launch {

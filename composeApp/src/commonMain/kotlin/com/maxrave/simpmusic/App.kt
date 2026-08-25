@@ -353,7 +353,7 @@ fun App(viewModel: SharedViewModel = koinInject()) {
                     ) {
                         Column {
                             AnimatedVisibility(
-                                isShowMiniPlayer && miniPlayerEnabled == DataStoreManager.TRUE && isLiquidGlassEnabled == DataStoreManager.FALSE,
+                                isShowMiniPlayer && miniPlayerEnabled == DataStoreManager.TRUE,
                                 enter = fadeIn() + slideInHorizontally(),
                                 exit = fadeOut(),
                             ) {
