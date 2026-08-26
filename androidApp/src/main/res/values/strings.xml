@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- P15 Moon Widget (0_o sleeping moon identity) -->
+    <string name="moon_widget_description">0_o now playing — sleeping moon</string>
+    <string name="moon_widget_idle_title">The night is quiet</string>
+    <string name="moon_widget_idle_artist">Tap to wake the moon</string>
+    <string name="moon_widget_play">Play</string>
+    <string name="moon_widget_pause">Pause</string>
+</resources>

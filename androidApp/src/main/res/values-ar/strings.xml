@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ودجت القمر النائم (P15) -->
+    <string name="moon_widget_description">0_o قيد التشغيل — القمر النائم</string>
+    <string name="moon_widget_idle_title">الليل هادئ</string>
+    <string name="moon_widget_idle_artist">انقر لإيقاظ القمر</string>
+    <string name="moon_widget_play">تشغيل</string>
+    <string name="moon_widget_pause">إيقاف مؤقت</string>
+</resources>
