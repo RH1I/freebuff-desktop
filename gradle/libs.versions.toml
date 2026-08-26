@@ -80,6 +80,10 @@ uri = "0.0.21"
 buildkonfig = "0.22.0"
 jna = "5.19.1"
 jnaPlatform = "5.19.1"
+# KCEF — Kotlin wrapper over jcefmaven (JetBrains JCEF / Chromium Embedded Framework).
+# Powers the desktop login browser (YouTube Music / Spotify / Discord sign-in).
+# Last release upstream: 2025.03.23 (see https://github.com/DatL4g/KCEF/releases).
+kcef = "2025.03.23"
 calf = "0.13.0"
 material = "1.14.0"
 osdetector = "1.7.3"
@@ -216,6 +220,7 @@ native-tray = { module = "io.github.kdroidfilter:composenativetray", version.ref
 #JVM
 jna = { module = "net.java.dev.jna:jna", version.ref = "jna" }
 jna-platform = { module = "net.java.dev.jna:jna-platform", version.ref = "jnaPlatform" }
+kcef = { group = "dev.datlag", name = "kcef", version.ref = "kcef" }
 nowplaying = { module = "org.simpmusic:nowplayingcenter", version = "0.0.3" }
 jmtc = { module = "org.simpmusic:jmtc", version = "0.0.3" }
 

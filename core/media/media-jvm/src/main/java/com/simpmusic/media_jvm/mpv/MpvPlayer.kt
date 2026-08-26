@@ -92,6 +92,18 @@ class MpvPlayer private constructor(
      * `MpvVideoSurfacePanel` that Swing used to blit.
      */
     val videoFrames: MpvVideoFrameSource? = null,
+    /**
+     * True when this handle was created with a render context on a `vo=libmpv` output DESPITE being
+     * an audio handle. Only such handles can host the visualizer chain — a lavfi video-output
+     * filter needs a video sink, and `vo=null` provides none.
+     *
+     * Deliberately NOT a public constructor parameter of every playback path: regular audio
+     * handles stay exactly as before (pinned `vo=null`, no render context), because mpv
+     * auto-probing landed on a terminal-graphics driver once and SIGABRT'd the JVM — see
+     * [create]. The probe in [MpvVisualizerEngine.isSupported] decides per process whether this
+     * mode ever gets enabled.
+     */
+    val canHostVisualizerChain: Boolean = false,
 ) {
     companion object {
         /** Userdata tag for every `mpv_observe_property` registration; we dispatch by name. */
@@ -122,11 +134,18 @@ class MpvPlayer private constructor(
          *   is loaded, as render.h requires.
          * @param networkCacheSeconds mpv's `cache-secs`. VLC's `--network-caching` was expressed
          *   in milliseconds (10000 / 15000); mpv's equivalent is in seconds.
+         * @param visualizerSink creates an AUDIO handle whose hidden `vo=libmpv` output plus
+         *   render context exist solely so [MpvVisualizerEngine]'s lavfi chain has a video sink
+         *   to draw into. Implies a render context like `audioOnly = false`, but never decodes
+         *   anything: the caller only feeds audio URLs. When the render context cannot be created
+         *   the returned handle reports [MpvPlayer.canHostVisualizerChain] == false and callers
+         *   must not start the visualizer on it.
          * @return null if libmpv is unavailable or the handle could not be initialized.
          */
         fun create(
             audioOnly: Boolean = true,
             networkCacheSeconds: Int = 10,
+            visualizerSink: Boolean = false,
         ): MpvPlayer? {
             val lib = MpvLibrary.INSTANCE ?: return null
             val ctx = lib.mpv_create()
@@ -250,7 +269,7 @@ class MpvPlayer private constructor(
             //       (See ``<mpv/render.h>``.)
             // Note `--vo=<driver>` takes a SINGLE driver, not a priority list (unlike `--vd`), so
             // a "libmpv,null" fallback chain is not available here.
-
+            //
             // Unlike option(), a failure here is fatal rather than a warning — see below.
             fun requiredOption(
                 name: String,
@@ -265,12 +284,20 @@ class MpvPlayer private constructor(
             }
 
             val voPinned =
-                if (audioOnly) {
-                    // VLC ":no-video".
-                    option("vid", "no")
-                    requiredOption("vo", "null")
-                } else {
-                    requiredOption("vo", "libmpv")
+                when {
+                    // Visualizer sink: a lavfi chain carrying a `vsink` CREATES a video track in
+                    // mpv, so `vid` must stay at its default — turning it off here would drop the
+                    // spectrum frames. The input is audio-only by contract, so there is nothing
+                    // else to decode; the VO exists purely as the chain's drawing surface.
+                    visualizerSink -> requiredOption("vo", "libmpv")
+
+                    audioOnly -> {
+                        // VLC ":no-video".
+                        option("vid", "no")
+                        requiredOption("vo", "null")
+                    }
+
+                    else -> requiredOption("vo", "libmpv")
                 }
             if (!voPinned) {
                 // Never hand an unpinned VO to mpv_initialize: auto-probing is what selected the
@@ -297,7 +324,7 @@ class MpvPlayer private constructor(
             // Creating it here (post-initialize, pre-loadfile) is correct: mpv_initialize() only
             // applies options, while the VO is instantiated when a file with video is loaded.
             var frameSource: MpvVideoFrameSource? = null
-            if (!audioOnly) {
+            if (!audioOnly || visualizerSink) {
                 val created = MpvVideoFrameSource()
                 if (created.attach(ctx)) {
                     frameSource = created
@@ -312,7 +339,12 @@ class MpvPlayer private constructor(
                 }
             }
 
-            return MpvPlayer(ctx, lib, frameSource).also {
+            return MpvPlayer(
+                ctx,
+                lib,
+                frameSource,
+                canHostVisualizerChain = visualizerSink && frameSource != null,
+            ).also {
                 it.start()
             }
         }
@@ -749,6 +781,43 @@ class MpvPlayer private constructor(
         if (isReleased) return
         setPropertyString("af", "")
     }
+
+    // ================= audio filter chain introspection =================
+    //
+    // The visualizer engine needs to append its entry onto whatever chain the crossfade system
+    // installed, and to restore exactly that string afterwards. These are read/write accessors
+    // over the same `af` property the methods above manage.
+
+    /**
+     * The handle's current `af` property as mpv reports it, or null when unavailable (released,
+     * nothing loaded yet). Empty string means "no filters installed".
+     */
+    fun getAudioFilterChain(): String? =
+        if (isReleased) {
+            null
+        } else {
+            try {
+                lib.mpv_get_property_string(ctx, "af")?.let { ptr ->
+                    try {
+                        ptr.getString(0)
+                    } finally {
+                        lib.mpv_free(ptr)
+                    }
+                }
+            } catch (e: Throwable) {
+                Logger.w(TAG, "get af threw: ${e.message}")
+                null
+            }
+        }
+
+    /**
+     * Overwrite the whole `af` property. @return true when mpv accepted the chain.
+     *
+     * Deliberately package-visible like [MpvCrossfadeFilter.lavfiName] — this is media-jvm plumbing
+     * for [MpvVisualizerEngine], not player API for higher layers.
+     */
+    fun setAudioFilterChain(value: String): Boolean =
+        if (isReleased) false else setPropertyString("af", value)
 
     /**
      * Repeat the current file indefinitely.

@@ -192,6 +192,13 @@ kotlin {
             // 0_o personal build: Sentry removed — crash reports never leave this machine.
             implementation(libs.native.tray)
             implementation(projects.mediaJvmUi)
+            // Direct dep so jvmMain can call the media layer's runtime capability probe
+            // (MpvVisualizerEngine.isSupported) — media-jvm-ui hides it via `implementation`.
+            implementation(projects.mediaJvm)
+            // 0_o: embedded Chromium (KCEF) for the desktop login screens — a real
+            // Google/Discord sign-in inside the app instead of paste-cookie-only.
+            // CEF natives download on first use (~100 MB) into ~/.simpmusic/kcef-bundle.
+            implementation(libs.kcef)
         }
     }
 }

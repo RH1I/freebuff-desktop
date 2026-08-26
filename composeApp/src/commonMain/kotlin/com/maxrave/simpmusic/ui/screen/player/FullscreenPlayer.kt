@@ -106,6 +106,7 @@ import com.maxrave.simpmusic.visualization.VisualizerView
 
 import com.maxrave.simpmusic.Platform
 import com.maxrave.simpmusic.getPlatform
+import com.maxrave.simpmusic.visualizerEngineAvailable
 
 import androidx.compose.runtime.DisposableEffect
 
@@ -209,7 +210,15 @@ fun FullscreenPlayer(
         onDispose { VisualizerBus.isEnabled = false }
     }
     val vizBands by VisualizerBus.bands.collectAsStateWithLifecycle()
-    val showVizToggle = getPlatform() == Platform.Android // desktop bands arrive with the lavfi engine
+    // 0_o: desktop now feeds the bus from the mpv lavfi engine — but only when the bundled libmpv
+    // actually has the showfreqs filter (the custom Linux ffmpeg slice does not; stock
+    // Windows/macOS builds do). The probe runs once and is cached.
+    val showVizToggle =
+        if (getPlatform() == Platform.Android) {
+            true
+        } else {
+            remember { visualizerEngineAvailable() }
+        }
 
     Box {
         MediaPlayerViewWithSubtitle(
