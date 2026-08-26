@@ -34,8 +34,8 @@ private const val TAG = "MpvVisualizerEngine"
  * installed (crossfade sweeps / rubberband are preserved), [stop] restores exactly that captured
  * string. Frames are pushed in by the owning adapter from the video frame source.
  */
-class MpvVisualizerEngine private constructor(
-    private val player: MpvPlayer,
+class MpvVisualizerEngine internal constructor(
+    internal val player: MpvPlayer,
 ) {
     fun start(): Boolean {
         if (!player.canHostVisualizerChain) return false

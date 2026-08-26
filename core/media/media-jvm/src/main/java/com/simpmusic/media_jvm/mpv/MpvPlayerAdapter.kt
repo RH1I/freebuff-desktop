@@ -114,6 +114,33 @@ class MpvPlayerAdapter(
     @Volatile
     private var currentPlayer: MpvPlayer? = null
 
+    /**
+     * Desktop spectrum visualizer. Created per playing handle when mpv can host the chain
+     * (see [MpvVisualizerEngine.isSupported]); started with playback, stopped on pause/stop,
+     * and torn down together with its [MpvPlayer] handle.
+     */
+    @Volatile
+    private var visualizerEngine: MpvVisualizerEngine? = null
+
+    /** Start the visualizer for [player]'s audio graph if this build's libmpv can host it. */
+    private fun startVisualizerIfNeeded(player: MpvPlayer) {
+        if (!MpvVisualizerEngine.isSupported()) return
+        val engine =
+            visualizerEngine?.takeIf { it.player === player }
+                ?: MpvVisualizerEngine(player).also { visualizerEngine = it }
+        if (!engine.start()) {
+            engine.stop()
+        }
+    }
+
+    private fun stopVisualizer() {
+        try {
+            visualizerEngine?.stop()
+        } catch (e: Exception) {
+            Logger.w(TAG, "Visualizer stop failed: ${e.message}")
+        }
+    }
+
     // Tracks whether the current player is actually rendering video
     // (based on PlayableSource.isVideo, not GenericMediaItem metadata)
     @Volatile
@@ -252,6 +279,7 @@ class MpvPlayerAdapter(
                     currentPlayer?.let { player ->
                         Logger.d(TAG, "Play: calling mpv play")
                         player.play()
+                        startVisualizerIfNeeded(player)
                         transitionToState(InternalState.PLAYING)
                         internalPlayWhenReady = true
                     } ?: Logger.w(TAG, "Play called but currentPlayer is null")
@@ -293,6 +321,7 @@ class MpvPlayerAdapter(
                     currentPlayer?.let { player ->
                         Logger.d(TAG, "Pause: calling mpv pause")
                         player.pause()
+                        stopVisualizer()
                         transitionToState(InternalState.PAUSED)
                         internalPlayWhenReady = false
                     }
@@ -314,6 +343,7 @@ class MpvPlayerAdapter(
         coroutineScope.launch {
             currentPlayer?.let { player ->
                 Logger.d(TAG, "Stop called")
+                stopVisualizer()
                 player.stop()
                 transitionToState(InternalState.IDLE)
                 stopPositionUpdates()
@@ -353,6 +383,7 @@ class MpvPlayerAdapter(
             currentLoadJob?.cancel()
 
             localCurrentMediaItemIndex = mediaItemIndex
+            stopVisualizer()
             currentPlayer?.release()
             currentPlayer = null
             currentPlayerIsVideo = false
@@ -871,6 +902,8 @@ class MpvPlayerAdapter(
         positionUpdateJob?.cancel()
         crossfadeJob?.cancel()
 
+        stopVisualizer()
+
         secondaryPlayer?.release()
         secondaryPlayer = null
         isCrossfading = false
@@ -1142,12 +1175,20 @@ class MpvPlayerAdapter(
     private fun createMediaPlayerInternal(source: PlayableSource): MpvPlayer? {
         // VLC used --network-caching=10000 globally and :network-caching=15000 for video.
         val cacheSeconds = if (source.isVideo) 15 else 10
+        // Audio handles double as visualizer sinks when the process-wide probe passed: the hidden
+        // vo=libmpv output costs nothing while idle, and MpvVisualizerEngine only ever appends to
+        // `af` on an explicit play. Video handles already carry a render context on their own.
+        val wantSink = !source.isVideo && MpvVisualizerEngine.isSupported()
         return if (source.isVideo) {
             Logger.d(TAG, "Creating video player with software render surface")
             MpvPlayer.create(audioOnly = false, networkCacheSeconds = cacheSeconds)
         } else {
-            Logger.d(TAG, "Creating audio-only player")
-            MpvPlayer.create(audioOnly = true, networkCacheSeconds = cacheSeconds)
+            Logger.d(TAG, "Creating audio-only player (visualizer sink: $wantSink)")
+            MpvPlayer.create(
+                audioOnly = true,
+                networkCacheSeconds = cacheSeconds,
+                visualizerSink = wantSink,
+            )
         }
     }
 
@@ -1358,6 +1399,7 @@ class MpvPlayerAdapter(
         currentPlayer = null
         currentPlayerIsVideo = false
         _currentVideoFrames.value = null
+        visualizerEngine = null
     }
 
     /**
@@ -1646,6 +1688,7 @@ class MpvPlayerAdapter(
         currentPlayerIsVideo = incoming.videoFrames != null
         _currentVideoFrames.value = incoming.videoFrames
         secondaryPlayer = null
+        startVisualizerIfNeeded(incoming)
 
         // Until now it only carried the minimal crossfade error listener (see
         // triggerCrossfadeTransition); give it the full one now that it is the current player.
@@ -1840,6 +1883,7 @@ class MpvPlayerAdapter(
         currentPlayerIsVideo = nextPlayer.videoFrames != null
         _currentVideoFrames.value = nextPlayer.videoFrames
         secondaryPlayer = null
+        startVisualizerIfNeeded(nextPlayer)
 
         // Now set up the full event listener on the new current player
         // (replaces the minimal crossfade error listener)
