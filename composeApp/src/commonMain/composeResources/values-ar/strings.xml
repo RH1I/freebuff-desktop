@@ -393,4 +393,13 @@
     <string name="golden_hour_description">التبديل التلقائي لهوية القمر الذهبي بين السادسة مساءً والسادسة صباحاً</string>
     <string name="cookie_missing_sapisid">هذا الكوكي ينقصه SAPISID — انسخ قائمة الكوكيز كاملة من music.youtube.com وأنت مسجّل دخول</string>
     <string name="cookie_missing_spdc">هذه لا تبدو قيمة sp_dc — انسخ قيمة كوكي sp_dc من open.spotify.com وأنت مسجّل دخول</string>
+    <string name="equalizer">مُعادِل الصوت</string>
+    <string name="equalizer_description">اضبط نغمة الصوت بمُعادِل عشري النطاقات (محرك التشغيل على الحاسوب)</string>
+    <string name="eq_preset">الإعداد المسبق</string>
+    <string name="eq_preset_flat">مسطح</string>
+    <string name="eq_preset_bass_boost">تعزيز الباس</string>
+    <string name="eq_preset_vocal">صوتي</string>
+    <string name="eq_preset_rock">روك</string>
+    <string name="eq_preset_electronic">إلكتروني</string>
+    <string name="eq_preset_custom">مخصص</string>
 </resources>

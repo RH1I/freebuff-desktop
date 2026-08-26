@@ -308,6 +308,15 @@ interface DataStoreManager {
 
     suspend fun setCrossfadeDjMode(enabled: Boolean)
 
+    /** Ten per-band gains in dB (see [EQ_BAND_HZ]), clamped to -12…+12. */
+    val equalizerGains: Flow<List<Double>>
+
+    suspend fun setEqualizerGains(gains: List<Double>)
+
+    val equalizerEnabled: Flow<String>
+
+    suspend fun setEqualizerEnabled(enabled: Boolean)
+
     val youtubeSubtitleLanguage: Flow<String>
 
     suspend fun setYoutubeSubtitleLanguage(language: String)

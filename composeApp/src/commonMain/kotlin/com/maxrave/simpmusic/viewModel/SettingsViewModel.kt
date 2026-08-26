@@ -12,6 +12,9 @@ import com.maxrave.common.VIDEO_QUALITY
 import com.maxrave.domain.data.entities.DownloadState
 import com.maxrave.domain.data.entities.GoogleAccountEntity
 import com.maxrave.domain.data.player.GenericCastState
+import com.maxrave.domain.extension.EqualizerPreset
+import com.maxrave.domain.extension.EQ_MAX_GAIN_DB
+import com.maxrave.domain.extension.EQ_MIN_GAIN_DB
 import com.maxrave.domain.extension.toNetScapeString
 import com.maxrave.domain.manager.DataStoreManager
 import com.maxrave.domain.mediaservice.handler.DownloadHandler
@@ -143,6 +146,19 @@ class SettingsViewModel(
     val crossfadeDuration: StateFlow<Int> = _crossfadeDuration
     private val _crossfadeDjMode = MutableStateFlow<Boolean>(true)
     val crossfadeDjMode: StateFlow<Boolean> = _crossfadeDjMode
+    private val _equalizerEnabled = MutableStateFlow(false)
+    val equalizerEnabled: StateFlow<Boolean> = _equalizerEnabled
+
+    /** Ten per-band dB gains, index-aligned with [com.maxrave.domain.extension.EQ_BAND_HZ]. */
+    private val _equalizerGains = MutableStateFlow(List(10) { 0.0 })
+    val equalizerGains: StateFlow<List<Double>> = _equalizerGains
+
+    /**
+     * The preset matching the current curve, or null when hand-tuned (or flat-but-not-via-FLAT).
+     * Recomputed from gains so manual slider edits drop out of preset mode automatically.
+     */
+    val equalizerPreset: EqualizerPreset?
+        get() = EqualizerPreset.matching(_equalizerGains.value.toDoubleArray())
     private val _youtubeSubtitleLanguage = MutableStateFlow<String>("")
     val youtubeSubtitleLanguage: StateFlow<String> = _youtubeSubtitleLanguage
 
@@ -292,6 +308,8 @@ class SettingsViewModel(
         getCrossfadeEnabled()
         getCrossfadeDuration()
         getCrossfadeDjMode()
+        getEqualizerEnabled()
+        getEqualizerGains()
         getContributorNameAndEmail()
         getBackupDownloaded()
         getUpdateChannel()
@@ -508,6 +526,51 @@ class SettingsViewModel(
         viewModelScope.launch {
             dataStoreManager.setCrossfadeDjMode(enabled)
             getCrossfadeDjMode()
+        }
+    }
+
+    private fun getEqualizerEnabled() {
+        viewModelScope.launch {
+            dataStoreManager.equalizerEnabled.collect { enabled ->
+                _equalizerEnabled.value = enabled == DataStoreManager.TRUE
+            }
+        }
+    }
+
+    fun setEqualizerEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            dataStoreManager.setEqualizerEnabled(enabled)
+        }
+    }
+
+    private fun getEqualizerGains() {
+        viewModelScope.launch {
+            dataStoreManager.equalizerGains.collect { gains ->
+                _equalizerGains.value = gains
+            }
+        }
+    }
+
+    /** Clamp at the source so the DataStore sanitizer never has to correct anything. */
+    fun setEqualizerBandGain(
+        bandIndex: Int,
+        gainDb: Double,
+    ) {
+        viewModelScope.launch {
+            val current = _equalizerGains.value.toMutableList()
+            if (bandIndex in current.indices) {
+                current[bandIndex] = gainDb.coerceIn(EQ_MIN_GAIN_DB, EQ_MAX_GAIN_DB)
+                dataStoreManager.setEqualizerGains(current)
+            }
+        }
+    }
+
+    /** Apply a named preset's full curve (FLAT = all zeros). */
+    fun applyEqualizerPreset(preset: EqualizerPreset) {
+        viewModelScope.launch {
+            dataStoreManager.setEqualizerGains(
+                preset.gains?.toList() ?: List(_equalizerGains.value.size) { 0.0 },
+            )
         }
     }
 

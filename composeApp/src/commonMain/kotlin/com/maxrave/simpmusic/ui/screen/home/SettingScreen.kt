@@ -53,6 +53,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -104,6 +105,10 @@ import com.maxrave.common.SUPPORTED_LOCATION
 import com.maxrave.common.SponsorBlockType
 import com.maxrave.common.VIDEO_QUALITY
 import com.maxrave.domain.extension.now
+import com.maxrave.domain.extension.EqualizerPreset
+import com.maxrave.domain.extension.EQ_BAND_HZ
+import com.maxrave.domain.extension.EQ_MAX_GAIN_DB
+import com.maxrave.domain.extension.EQ_MIN_GAIN_DB
 import com.maxrave.domain.manager.DataStoreManager
 import com.maxrave.domain.manager.DataStoreManager.Values.TRUE
 import com.maxrave.domain.repository.ImportProgress
@@ -123,6 +128,7 @@ import com.maxrave.simpmusic.ui.component.CenterLoadingBox
 import com.maxrave.simpmusic.ui.component.EndOfPage
 import com.maxrave.simpmusic.ui.component.RippleIconButton
 import com.maxrave.simpmusic.ui.component.SettingItem
+import com.maxrave.simpmusic.visualizerEngineAvailable
 import com.maxrave.simpmusic.ui.icon.ArrowBackIosNew
 import com.maxrave.simpmusic.ui.icon.Close
 import com.maxrave.simpmusic.ui.icon.Error
@@ -168,6 +174,7 @@ import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlin.math.roundToInt
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.format
 import kotlinx.datetime.format.FormatStringsInDatetimeFormats
@@ -182,6 +189,15 @@ import simpmusic.composeapp.generated.resources.about_us
 import simpmusic.composeapp.generated.resources.accounts_and_integrations
 import simpmusic.composeapp.generated.resources.accounts_and_integrations_sub
 import simpmusic.composeapp.generated.resources.playback_and_audio
+import simpmusic.composeapp.generated.resources.eq_preset_vocal
+import simpmusic.composeapp.generated.resources.eq_preset_rock
+import simpmusic.composeapp.generated.resources.eq_preset_flat
+import simpmusic.composeapp.generated.resources.eq_preset_electronic
+import simpmusic.composeapp.generated.resources.eq_preset_custom
+import simpmusic.composeapp.generated.resources.eq_preset_bass_boost
+import simpmusic.composeapp.generated.resources.eq_preset
+import simpmusic.composeapp.generated.resources.equalizer_description
+import simpmusic.composeapp.generated.resources.equalizer
 import simpmusic.composeapp.generated.resources.playback_and_audio_sub
 import simpmusic.composeapp.generated.resources.appearance_sub
 import simpmusic.composeapp.generated.resources.library_and_storage
@@ -537,6 +553,13 @@ fun SettingScreen(
     val crossfadeDuration by viewModel.crossfadeDuration.collectAsStateWithLifecycle()
     val crossfadeDjMode by viewModel.crossfadeDjMode.collectAsStateWithLifecycle()
     val castState by viewModel.castState.collectAsStateWithLifecycle()
+
+    // Desktop equalizer: hidden entirely unless this build's libmpv can host lavfi af chains —
+    // the SAME probe the visualizer uses, so both features appear and disappear together.
+    val equalizerSupported by remember { mutableStateOf(visualizerEngineAvailable()) }
+    val equalizerEnabled by viewModel.equalizerEnabled.collectAsStateWithLifecycle()
+    val equalizerGains by viewModel.equalizerGains.collectAsStateWithLifecycle()
+    val equalizerPreset by remember { derivedStateOf { viewModel.equalizerPreset } }
 
 
     val hazeState =
@@ -1246,6 +1269,95 @@ fun SettingScreen(
                             isEnable = !castState.isRemote,
                         )
 //                        }
+                    }
+                }
+            }
+        }
+        // Desktop 10-band equalizer (probe-gated like the visualizer — hidden when this
+        // build's libmpv/ffmpeg cannot host lavfi af chains)
+        if (equalizerSupported) {
+            item(key = "equalizer") {
+                Column {
+                    SettingItem(
+                        title = stringResource(Res.string.equalizer),
+                        subtitle =
+                            if (castState.isRemote) {
+                                stringResource(Res.string.not_available_while_casting)
+                            } else {
+                                stringResource(Res.string.equalizer_description)
+                            },
+                        smallSubtitle = true,
+                        switch = (equalizerEnabled to { viewModel.setEqualizerEnabled(it) }),
+                        isEnable = !castState.isRemote,
+                    )
+                    AnimatedVisibility(visible = equalizerEnabled && !castState.isRemote) {
+                        Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+                            val presetLabels =
+                                listOf(
+                                    EqualizerPreset.FLAT to stringResource(Res.string.eq_preset_flat),
+                                    EqualizerPreset.BASS_BOOST to stringResource(Res.string.eq_preset_bass_boost),
+                                    EqualizerPreset.VOCAL to stringResource(Res.string.eq_preset_vocal),
+                                    EqualizerPreset.ROCK to stringResource(Res.string.eq_preset_rock),
+                                    EqualizerPreset.ELECTRONIC to stringResource(Res.string.eq_preset_electronic),
+                                )
+                            SettingItem(
+                                title = stringResource(Res.string.eq_preset),
+                                subtitle =
+                                    presetLabels.firstOrNull { it.first == equalizerPreset }?.second
+                                        ?: stringResource(Res.string.eq_preset_custom),
+                                onClick = {
+                                    viewModel.setAlertData(
+                                        SettingAlertState(
+                                            title = runBlocking { getString(Res.string.eq_preset) },
+                                            selectOne =
+                                                SettingAlertState.SelectData(
+                                                    listSelect =
+                                                        presetLabels.map { (it.first == equalizerPreset) to it.second },
+                                                ),
+                                            confirm =
+                                                runBlocking { getString(Res.string.change) } to { state ->
+                                                    val selected = state.selectOne?.getSelected()
+                                                    presetLabels.firstOrNull { it.second == selected }?.first?.let {
+                                                        viewModel.applyEqualizerPreset(it)
+                                                    }
+                                                },
+                                            dismiss = runBlocking { getString(Res.string.cancel) },
+                                        ),
+                                    )
+                                },
+                            )
+                            // Ten vertical sliders: gain up = louder band. Slider value runs
+                            // bottom(-12 dB) → top(+12 dB); the label shows the signed dB.
+                            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                equalizerGains.forEachIndexed { index, gain ->
+                                    Column(
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        modifier = Modifier.weight(1f),
+                                    ) {
+                                        Text(
+                                            text = "${gain.roundToInt()}",
+                                            style = typo().labelSmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        )
+                                        Slider(
+                                            value = gain.toFloat(),
+                                            onValueChange = { viewModel.setEqualizerBandGain(index, it.toDouble()) },
+                                            valueRange = EQ_MIN_GAIN_DB.toFloat()..EQ_MAX_GAIN_DB.toFloat(),
+                                            modifier =
+                                                Modifier
+                                                    .height(120.dp)
+                                                    .width(28.dp),
+                                        )
+                                        Spacer(Modifier.height(4.dp))
+                                        Text(
+                                            text = eqBandLabel(EQ_BAND_HZ[index]),
+                                            style = typo().labelSmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        )
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -2986,3 +3098,7 @@ fun SettingsHubCard(
         }
     }
 }
+
+/** Compact band caption for the EQ slider row: `31`, `125`, `1k`, `16k`. */
+private fun eqBandLabel(hz: Double): String =
+    if (hz >= 1000.0) "${(hz / 1000.0).toInt()}k" else "${hz.toInt()}"

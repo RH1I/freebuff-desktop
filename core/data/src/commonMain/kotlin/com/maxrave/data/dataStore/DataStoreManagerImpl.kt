@@ -11,6 +11,8 @@ import com.maxrave.common.SELECTED_LANGUAGE
 import com.maxrave.common.SUPPORTED_LANGUAGE
 import com.maxrave.common.SponsorBlockType
 import com.maxrave.domain.data.model.network.ProxyConfiguration
+import com.maxrave.domain.extension.EQ_MAX_GAIN_DB
+import com.maxrave.domain.extension.EQ_MIN_GAIN_DB
 import com.maxrave.domain.manager.DataStoreManager
 import com.maxrave.domain.manager.DataStoreManager.Values.AI_PROVIDER_GEMINI
 import com.maxrave.domain.manager.DataStoreManager.Values.FALSE
@@ -1209,6 +1211,32 @@ internal class DataStoreManagerImpl(
         }
     }
 
+    override val equalizerGains: Flow<List<Double>> =
+        settingsDataStore.data.map { preferences ->
+            parseEqualizerGains(preferences[EQUALIZER_GAINS] ?: "")
+        }
+
+    override suspend fun setEqualizerGains(gains: List<Double>) {
+        withContext(Dispatchers.IO) {
+            settingsDataStore.edit { settings ->
+                settings[EQUALIZER_GAINS] = encodeEqualizerGains(gains)
+            }
+        }
+    }
+
+    override val equalizerEnabled: Flow<String> =
+        settingsDataStore.data.map { preferences ->
+            preferences[EQUALIZER_ENABLED] ?: FALSE
+        }
+
+    override suspend fun setEqualizerEnabled(enabled: Boolean) {
+        withContext(Dispatchers.IO) {
+            settingsDataStore.edit { settings ->
+                settings[EQUALIZER_ENABLED] = if (enabled) TRUE else FALSE
+            }
+        }
+    }
+
     override val youtubeSubtitleLanguage =
         settingsDataStore.data.map { preferences ->
             val languageValue = language.first()
@@ -1532,6 +1560,10 @@ internal class DataStoreManagerImpl(
         val CROSSFADE_ENABLED = stringPreferencesKey("crossfade_enabled")
         val CROSSFADE_DURATION = intPreferencesKey("crossfade_duration")
         val CROSSFADE_DJ_MODE = stringPreferencesKey("crossfade_dj_mode")
+        val EQUALIZER_ENABLED = stringPreferencesKey("eq_enabled")
+
+        /** Comma-separated per-band dB gains, e.g. `"8,7,5.5,3,1,0,0,0,0,0"`. */
+        val EQUALIZER_GAINS = stringPreferencesKey("eq_gains")
         val LYRICS_PROVIDER = stringPreferencesKey("lyrics_provider")
         val TRANSLATION_LANGUAGE = stringPreferencesKey("translation_language")
         val USE_TRANSLATION_LANGUAGE = stringPreferencesKey("use_translation_language")
@@ -1613,6 +1645,29 @@ internal class DataStoreManagerImpl(
         val AUTO_BACKUP_FREQUENCY = stringPreferencesKey("auto_backup_frequency")
         val AUTO_BACKUP_MAX_FILES = intPreferencesKey("auto_backup_max_files")
         val AUTO_BACKUP_LAST_TIME = longPreferencesKey("auto_backup_last_time")
+
+        /** Band count of the desktop 10-band equalizer. */
+        private const val EQ_BAND_COUNT = 10
+
+        private val EQ_GAIN_RANGE = EQ_MIN_GAIN_DB..EQ_MAX_GAIN_DB
+
+        /**
+         * `"8,7,5.5,3,1,0,0,0,0,0"` → ten clamped dB gains. Anything unreadable, the wrong
+         * length or out of range falls back to flat rather than poisoning the audio chain.
+         */
+        internal fun parseEqualizerGains(raw: String): List<Double> {
+            if (raw.isBlank()) return List(EQ_BAND_COUNT) { 0.0 }
+            val parts = raw.split(",")
+            if (parts.size != EQ_BAND_COUNT) return List(EQ_BAND_COUNT) { 0.0 }
+            return parts.map {
+                it.trim().toDoubleOrNull()?.coerceIn(EQ_GAIN_RANGE) ?: 0.0
+            }
+        }
+
+        internal fun encodeEqualizerGains(gains: List<Double>): String =
+            gains.take(EQ_BAND_COUNT)
+                .map { it.coerceIn(EQ_GAIN_RANGE) }
+                .joinToString(",")
     }
 }
 

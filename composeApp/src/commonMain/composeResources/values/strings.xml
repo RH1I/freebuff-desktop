@@ -629,4 +629,13 @@
     <string name="import_result_skipped">%1$d entries were skipped because their song was missing from the file.</string>
     <string name="import_failed">Import failed</string>
     <string name="import_invalid_file">This file is not a valid 0_o import file.</string>
+    <string name="equalizer">Equalizer</string>
+    <string name="equalizer_description">Shape the sound with a 10-band equalizer (desktop playback engine)</string>
+    <string name="eq_preset">Preset</string>
+    <string name="eq_preset_flat">Flat</string>
+    <string name="eq_preset_bass_boost">Bass Boost</string>
+    <string name="eq_preset_vocal">Vocal</string>
+    <string name="eq_preset_rock">Rock</string>
+    <string name="eq_preset_electronic">Electronic</string>
+    <string name="eq_preset_custom">Custom</string>
 </resources>

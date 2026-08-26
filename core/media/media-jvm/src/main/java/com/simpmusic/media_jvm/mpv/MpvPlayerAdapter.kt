@@ -5,6 +5,7 @@ import com.maxrave.domain.data.player.GenericMediaItem
 import com.maxrave.domain.data.player.GenericPlaybackParameters
 import com.maxrave.domain.data.player.PlayerConstants
 import com.maxrave.domain.data.player.PlayerError
+import com.maxrave.domain.extension.EQ_BAND_HZ
 import com.maxrave.domain.extension.isVideo
 import com.maxrave.domain.manager.DataStoreManager
 import com.maxrave.domain.mediaservice.player.MediaPlayerInterface
@@ -106,6 +107,29 @@ class MpvPlayerAdapter(
                 Logger.d(TAG, "Watch video enabled: $watchVideoEnabled")
             }
         }
+
+        // Equalizer settings: a change while PAUSED is applied on the next play(); a change
+        // while PLAYING retunes the live chain immediately (flat/disabled strips the entry).
+        coroutineScope.launch {
+            dataStoreManager.equalizerEnabled.collect { enabled ->
+                val newEnabled = (enabled == DataStoreManager.TRUE)
+                if (newEnabled != equalizerEnabled) {
+                    equalizerEnabled = newEnabled
+                    Logger.d(TAG, "Equalizer enabled: $equalizerEnabled")
+                    currentPlayer?.let { refreshLiveEqualizer(it) }
+                }
+            }
+        }
+        coroutineScope.launch {
+            dataStoreManager.equalizerGains.collect { gains ->
+                val newGains = gains.toDoubleArray()
+                if (!newGains.contentEquals(equalizerGainsDb)) {
+                    equalizerGainsDb = newGains
+                    Logger.d(TAG, "Equalizer gains: ${newGains.joinToString()}")
+                    currentPlayer?.let { refreshLiveEqualizer(it) }
+                }
+            }
+        }
     }
 
     // ========== State Management ==========
@@ -138,6 +162,61 @@ class MpvPlayerAdapter(
             visualizerEngine?.stop()
         } catch (e: Exception) {
             Logger.w(TAG, "Visualizer stop failed: ${e.message}")
+        }
+    }
+
+    /**
+     * Desktop 10-band equalizer. Gated by the SAME process-wide libmpv probe as the visualizer —
+     * the lavfi-in-`af` mechanism it rides on is exactly what the probe exercises — so on builds
+     * whose ffmpeg lacks those filters both features hide together.
+     */
+    @Volatile
+    private var equalizerEngine: MpvEqualizerEngine? = null
+
+    /** Latest DataStore values, applied to every handle that starts playing. */
+    @Volatile
+    private var equalizerEnabled = false
+
+    @Volatile
+    private var equalizerGainsDb = DoubleArray(EQ_BAND_HZ.size)
+
+    /**
+     * Apply the current EQ state to [player] if this build's libmpv can host the chain.
+     *
+     * Called from the same lifecycle points as [startVisualizerIfNeeded]: after the crossfade
+     * machinery has installed (or cleared) its own filters, so the EQ entry lands ON TOP of
+     * whatever base chain exists and is re-captured per handle.
+     */
+    private fun applyEqualizerIfNeeded(player: MpvPlayer) {
+        if (!MpvVisualizerEngine.isSupported()) return
+        if (!equalizerEnabled || equalizerGainsDb.all { kotlin.math.abs(it) < 0.05 }) return
+        val engine =
+            equalizerEngine?.takeIf { it.player === player }
+                ?: MpvEqualizerEngine(player).also { equalizerEngine = it }
+        engine.start(equalizerGainsDb)
+    }
+
+    /**
+     * Reconcile the live chain with current settings: install/retune when active, strip the EQ
+     * entry (restoring whatever was underneath) when disabled or flattened.
+     */
+    private fun refreshLiveEqualizer(player: MpvPlayer) {
+        if (!MpvVisualizerEngine.isSupported()) return
+        if (equalizerEnabled && equalizerGainsDb.any { kotlin.math.abs(it) >= 0.05 }) {
+            val engine =
+                equalizerEngine?.takeIf { it.player === player }
+                    ?: MpvEqualizerEngine(player).also { equalizerEngine = it }
+            engine.start(equalizerGainsDb)
+        } else {
+            stopEqualizer()
+        }
+    }
+
+    private fun stopEqualizer() {
+        try {
+            equalizerEngine?.stop()
+        } catch (e: Exception) {
+            Logger.w(TAG, "Equalizer stop failed: ${e.message}")
         }
     }
 
@@ -279,6 +358,7 @@ class MpvPlayerAdapter(
                     currentPlayer?.let { player ->
                         Logger.d(TAG, "Play: calling mpv play")
                         player.play()
+                        applyEqualizerIfNeeded(player)
                         startVisualizerIfNeeded(player)
                         transitionToState(InternalState.PLAYING)
                         internalPlayWhenReady = true
@@ -322,6 +402,7 @@ class MpvPlayerAdapter(
                         Logger.d(TAG, "Pause: calling mpv pause")
                         player.pause()
                         stopVisualizer()
+                        stopEqualizer()
                         transitionToState(InternalState.PAUSED)
                         internalPlayWhenReady = false
                     }
@@ -1894,7 +1975,14 @@ class MpvPlayerAdapter(
         // adjusted — but restore them anyway, mirroring the Android finalize path.)
         currentPlayer?.setMasterVolume((internalVolume * 100).toInt())
         currentPlayer?.setFadeVolume(100)
+        // EQ first, visualizer second: each engine appends onto the live `af` string and
+        // captures whatever was there as ITS restore point, so the last writer must be the
+        // one whose stop() runs first on pause (visualizer stops before the equalizer).
         currentPlayer?.endCrossfadeAudio()
+        applyEqualizerIfNeeded(currentPlayer!!)
+        startVisualizerIfNeeded(currentPlayer!!)
+        // Re-arm the visualizer here too: the endCrossfadeAudio() above cleared the whole
+        // chain, including the entry the earlier startVisualizerIfNeeded installed mid-fade.
 
         // Reset state
         setCrossfading(false)
@@ -2248,10 +2336,13 @@ class MpvPlayerAdapter(
     /**
      * Return a handle to untouched playback: no crossfade filters, natural speed. Clearing the
      * filter chain is also what drops the pitch shift (see [MpvPlayer.clearAudioFilters]).
+     * The equalizer is re-applied afterwards so a cleared chain does not silently drop it
+     * (mirrors how the visualizer re-arms itself on the next play).
      */
     private fun MpvPlayer.endCrossfadeAudio() {
         clearAudioFilters()
         setRate(internalPlaybackSpeed)
+        applyEqualizerIfNeeded(this)
     }
 
     // ========== Position Updates ==========
