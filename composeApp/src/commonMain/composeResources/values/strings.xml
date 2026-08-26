@@ -392,6 +392,10 @@
     <string name="golden_hour_toggle">Golden hour</string>
     <string name="golden_hour_description">Automatically switch to the Golden Moon palette between 18:00 and 06:00</string>
     <string name="cookie_login_desktop_hint">No browser inside the desktop app — use the cookie login: tap the icon at the top corner, follow the steps, and paste your cookie.</string>
+    <string name="kcef_missing_libs_title">Missing system components</string>
+    <string name="kcef_missing_libs_message">The built-in sign-in browser needs system libraries that are not installed on this computer:</string>
+    <string name="kcef_missing_libs_install_hint">Install them with your package manager, then restart the app:\nsudo apt install %1$s</string>
+    <string name="kcef_missing_libs_cookie_fallback">You can still sign in with the cookie flow using the icon at the top corner.</string>
     <string name="theme_color_wallpaper">Wallpaper</string>
     <string name="theme_color_custom">Custom</string>
     <string name="custom_color">Custom color</string>

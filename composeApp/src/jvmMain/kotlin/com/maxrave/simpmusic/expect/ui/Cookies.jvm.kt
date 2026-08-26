@@ -3,10 +3,14 @@ package com.maxrave.simpmusic.expect.ui
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -40,17 +44,90 @@ import java.io.File
 import java.net.CookieHandler
 import java.net.CookieManager
 import java.net.URI
+import java.util.Locale
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import org.jetbrains.compose.resources.stringResource
 import simpmusic.composeapp.generated.resources.Res
+import simpmusic.composeapp.generated.resources.cancel
 import simpmusic.composeapp.generated.resources.cookie_login_desktop_hint
+import simpmusic.composeapp.generated.resources.kcef_missing_libs_cookie_fallback
+import simpmusic.composeapp.generated.resources.kcef_missing_libs_install_hint
+import simpmusic.composeapp.generated.resources.kcef_missing_libs_message
+import simpmusic.composeapp.generated.resources.kcef_missing_libs_title
 
 private const val TAG = "Cookies.jvm"
 
 /** Where the CEF bundle (~100 MB, per-OS) is downloaded and cached on first use. */
 private fun kcefInstallDir(): File =
     File(System.getProperty("user.home"), ".simpmusic/kcef-bundle")
+
+/**
+ * Shared libraries CEF's Linux build links against, mapped to the Debian/Ubuntu packages that
+ * provide them. Checked before [KCEF.init] so a box missing one of them gets a clear dialog
+ * instead of a native crash (UnsatisfiedLinkError / SIGSEGV inside libcef.so).
+ *
+ * Soname spellings follow what `ldconfig -p` actually reports: Ubuntu 24.04's t64 transition
+ * renamed the ATK bridge to libatk-bridge-2.0.so.0 (no second ".0"), and fontconfig ships as
+ * plain "fontconfig.so.1". Keep these in sync with upstream JCEF's Linux dependency list.
+ */
+private val cefLinuxLibraries: List<Pair<String, String>> =
+    listOf(
+        "libnss3.so" to "libnss3",
+        "libnssutil3.so" to "libnss3",
+        "libsmime3.so" to "libnss3",
+        "libssl3.so" to "libnss3",
+        "libatk-1.0.so.0" to "libatk1.0-0t64 (or libatk1.0-0)",
+        "libatk-bridge-2.0.so.0" to "libatk-bridge2.0-0t64 (or libatk-bridge2.0-0)",
+        "libcups.so.2" to "libcups2t64 (or libcups2)",
+        "libdrm.so.2" to "libdrm2",
+        "libxkbcommon.so.0" to "libxkbcommon0",
+        "libXcomposite.so.1" to "libxcomposite1",
+        "libXdamage.so.1" to "libxdamage1",
+        "libXfixes.so.3" to "libxfixes3",
+        "libXrandr.so.2" to "libxrandr2",
+        "libgbm.so.1" to "libgbm1",
+        "libpango-1.0.so.0" to "libpango-1.0-0",
+        "libcairo.so.2" to "libcairo2",
+        "libasound.so.2" to "libasound2t64 (or libasound2)",
+        "libgtk-3.so.0" to "libgtk-3-0t64 (or libgtk-3-0)",
+        "libgdk-3.so.0" to "libgtk-3-0t64 (or libgtk-3-0)",
+        "libX11-xcb.so.1" to "libx11-xcb1",
+        "libxcb.so.1" to "libxcb1",
+        "libXext.so.6" to "libxext6",
+        "libXrender.so.1" to "libxrender1",
+        "libXi.so.6" to "libxi6",
+        "libXtst.so.6" to "libxtst6",
+        "libXcursor.so.1" to "libxcursor1",
+        "libgobject-2.0.so.0" to "libglib2.0-0t64 (or libglib2.0-0)",
+        "libglib-2.0.so.0" to "libglib2.0-0t64 (or libglib2.0-0)",
+        "libdbus-1.so.3" to "libdbus-1-3",
+        "libexpat.so.1" to "libexpat1",
+        "fontconfig.so.1" to "libfontconfig1",
+        "libfreetype.so.6" to "libfreetype6",
+    )
+
+/**
+ * Names of the required libraries missing from this system (ldconfig cache), or empty when the
+ * host can run CEF. Cheap enough to run on every login-screen composition.
+ */
+internal fun missingCefSystemLibraries(): List<String> {
+    if (!System.getProperty("os.name", "").lowercase(Locale.ROOT).contains("linux")) return emptyList()
+    val installed = HashSet<String>()
+    runCatching {
+        java.io.BufferedReader(java.io.InputStreamReader(Runtime.getRuntime().exec("ldconfig -p").inputStream)).use { reader ->
+            reader.forEachLine { line ->
+                // Format: "	libname (libc6,x86-64) => /path/libname"
+                line.trim().substringBefore(" (").takeIf { it.isNotBlank() }?.let(installed::add)
+            }
+        }
+    }.onFailure {
+        // No ldconfig (or it failed): assume nothing is missing rather than blocking login on a
+        // heuristic — KCEF's own init will surface any real problem.
+        return emptyList()
+    }
+    return cefLinuxLibraries.mapNotNull { if (it.first in installed) null else it.second }
+}
 
 /**
  * One process-wide KCEF init gate. [KCEF.init] is internally idempotent, but it is suspend and
@@ -244,6 +321,59 @@ private fun KcefLoadingIndicator(progressPercent: Int) {
     }
 }
 
+/**
+ * Blocking dialog for hosts that are missing the system libraries CEF needs. Lists the apt
+ * packages verbatim (Arabic + English strings) instead of letting KCEF die inside a native
+ * UnsatisfiedLinkError, and points at the cookie-login fallback which needs no browser.
+ */
+@Composable
+private fun MissingCefLibrariesDialog(missing: List<String>, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                stringResource(Res.string.kcef_missing_libs_title),
+                color = Color.White,
+            )
+        },
+        text = {
+            Column {
+                Text(
+                    stringResource(Res.string.kcef_missing_libs_message),
+                    style = typo().bodyMedium,
+                    color = Color.White,
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    missing.distinct().joinToString("\n") { "• $it" },
+                    style = typo().labelMedium,
+                    color = Color.White.copy(alpha = 0.85f),
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    stringResource(
+                        Res.string.kcef_missing_libs_install_hint,
+                        missing.distinct().joinToString(" "),
+                    ),
+                    style = typo().labelMedium,
+                    color = Color.White,
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    stringResource(Res.string.kcef_missing_libs_cookie_fallback),
+                    style = typo().labelSmall,
+                    color = Color.White.copy(alpha = 0.6f),
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(Res.string.cancel))
+            }
+        },
+    )
+}
+
 /** Shared body for both desktop login webviews. */
 @Composable
 private fun KcefWebContent(
@@ -252,8 +382,39 @@ private fun KcefWebContent(
     aboveContent: @Composable (BoxScope.() -> Unit),
     onBrowserCreated: (KCEFBrowser?) -> Unit = {},
 ) {
-    val initState = rememberKcefInit()
+    // Pre-flight: detect missing CEF runtime libraries BEFORE touching KCEF, so a host without
+    // e.g. libnss3 gets an actionable dialog (and the paste-cookie flow) instead of a native crash.
+    var showMissingDialog by remember { mutableStateOf(true) }
+    val missingLibs =
+        remember {
+            runCatching { missingCefSystemLibraries() }
+                .onFailure { Logger.w(TAG, "CEF preflight check failed: ${it.message}") }
+                .getOrDefault(emptyList())
+        }
 
+    if (missingLibs.isEmpty()) {
+        val initState = rememberKcefInit()
+        KcefBody(initState, initUrl, onPageFinished, aboveContent, onBrowserCreated)
+    } else {
+        Box(modifier = Modifier.fillMaxSize()) {
+            KcefUnavailableHint(null)
+            aboveContent()
+        }
+        if (showMissingDialog) {
+            MissingCefLibrariesDialog(missing = missingLibs, onDismiss = { showMissingDialog = false })
+        }
+    }
+}
+
+/** The normal path body: render per shared [KcefInitState]. Extracted from [KcefWebContent]. */
+@Composable
+private fun KcefBody(
+    initState: KcefInitState,
+    initUrl: String,
+    onPageFinished: (String) -> Unit,
+    aboveContent: @Composable (BoxScope.() -> Unit),
+    onBrowserCreated: (KCEFBrowser?) -> Unit,
+) {
     Box(modifier = Modifier.fillMaxSize()) {
         when (initState) {
             is KcefInitState.Ready -> {
