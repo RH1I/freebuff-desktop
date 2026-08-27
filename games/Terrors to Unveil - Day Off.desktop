@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Terrors to Unveil - Day Off
+Comment=Play this game on Steam
+Exec=steam steam://rungameid/3587490
+Icon=steam_icon_3587490
+Terminal=false
+Type=Application
+Categories=Game;

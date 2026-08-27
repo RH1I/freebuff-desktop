@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Overcome Your Fears - Caretaker
+Comment=Play this game on Steam
+Exec=steam steam://rungameid/3550490
+Icon=steam_icon_3550490
+Terminal=false
+Type=Application
+Categories=Game;

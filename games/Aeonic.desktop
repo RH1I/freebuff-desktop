@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Aeonic
+Comment=Play this game on Steam
+Exec=steam steam://rungameid/3277530
+Icon=steam_icon_3277530
+Terminal=false
+Type=Application
+Categories=Game;

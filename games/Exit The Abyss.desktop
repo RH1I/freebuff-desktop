@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Exit The Abyss
+Comment=Play this game on Steam
+Exec=steam steam://rungameid/3518110
+Icon=steam_icon_3518110
+Terminal=false
+Type=Application
+Categories=Game;

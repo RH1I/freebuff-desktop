@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=The Red Lantern
+Comment=Play this game on Steam
+Exec=steam steam://rungameid/1053710
+Icon=steam_icon_1053710
+Terminal=false
+Type=Application
+Categories=Game;

@@ -1,0 +1,14 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=تشغيل 3lmnu
+Name[ar]=تشغيل 3lmnu
+Comment=Launch 3lmnu development server
+Comment[ar]=تشغيل خادم 3lmnu للتطوير
+Exec=bash -c "cd ~/Downloads/3lmnu && npm run dev; exec bash"
+Icon=utilities-terminal
+Terminal=true
+Type=Application
+Categories=Development;IDE;
+Keywords=node;npm;development;server;
+StartupNotify=true

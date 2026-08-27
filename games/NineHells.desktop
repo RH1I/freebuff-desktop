@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=NineHells
+Comment=Play this game on Steam
+Exec=steam steam://rungameid/2860410
+Icon=steam_icon_2860410
+Terminal=false
+Type=Application
+Categories=Game;

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Lost in Anomaly
+Comment=Play this game on Steam
+Exec=steam steam://rungameid/3312020
+Icon=steam_icon_3312020
+Terminal=false
+Type=Application
+Categories=Game;

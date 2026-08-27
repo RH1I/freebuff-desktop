@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=3bshrt3 Theme Manager
+Name[ar]=مدير الثيمات 3bshrt3
+Comment=Advanced Theme Manager for Linux Mint
+Comment[ar]=مدير ثيمات متقدم لنظام Linux Mint
+Exec=python3 /home/bsh3/.config/3bshrt3/3bshrt3.py
+Icon=preferences-desktop-theme
+Terminal=false
+Categories=Utility;DesktopSettings;GTK;
+Keywords=theme;gtk;icons;cursor;appearance;ثيم;مظهر;
+StartupNotify=true

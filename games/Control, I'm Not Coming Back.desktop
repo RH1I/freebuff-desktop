@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Control, I'm Not Coming Back
+Comment=Play this game on Steam
+Exec=steam steam://rungameid/4515660
+Icon=steam_icon_4515660
+Terminal=false
+Type=Application
+Categories=Game;

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Drift86
+Comment=Play this game on Steam
+Exec=steam steam://rungameid/1070580
+Icon=steam_icon_1070580
+Terminal=false
+Type=Application
+Categories=Game;

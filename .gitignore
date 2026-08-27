@@ -1,0 +1,4 @@
+*.AppImage
+node_modules/
+dist/
+*.lock

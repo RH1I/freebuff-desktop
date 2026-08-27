@@ -1,0 +1,31 @@
+#!/bin/bash
+# Freebuff — unified entry point for all tools
+DIR="$(cd "$(dirname "$0")" && pwd)"
+source "$DIR/lib.sh"
+
+usage() {
+    cat << 'EOF'
+freebuff color       → أداة الألوان (presets + GUI)
+freebuff brightness  → تحكم السطوع
+freebuff break       → كسر قيود الشاشة
+freebuff fix         → إصلاح الشاشات
+freebuff wallpaper   → مدير الخلفيات
+freebuff status      → تقرير النظام
+freebuff setup       → الإعداد الشامل
+freebuff legendary   → التثبيت التفاعلي
+freebuff help        → هذه الرسالة
+EOF
+}
+
+case "${1:-}" in
+    color)      shift; bash "$DIR/Color_God.sh" "$@" ;;
+    brightness) shift; bash "$DIR/Brightness.sh" "$@" ;;
+    break)      shift; bash "$DIR/BREAK_LIMITS.sh" "$@" ;;
+    fix)        shift; bash "$DIR/FIX_DISPLAYS.sh" "$@" ;;
+    wallpaper)  shift; bash "$DIR/pixel_wallpaper_manager.sh" "$@" ;;
+    status)     shift; bash "$DIR/upgrade-summary.sh" "$@" ;;
+    setup)      shift; bash "$DIR/THE_ULTIMATE_MASTER.sh" "$@" ;;
+    legendary)  shift; bash "$DIR/legendary-setup.sh" "$@" ;;
+    help|-h|--help|"") usage ;;
+    *)  err "unknown command: $1"; usage; exit 1 ;;
+esac
