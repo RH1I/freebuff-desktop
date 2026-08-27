@@ -10,6 +10,7 @@ freebuff brightness  → تحكم السطوع
 freebuff break       → كسر قيود الشاشة
 freebuff fix         → إصلاح الشاشات
 freebuff wallpaper   → مدير الخلفيات
+freebuff dual        → خلفية مختلفة لكل شاشة
 freebuff status      → تقرير النظام
 freebuff setup       → الإعداد الشامل
 freebuff legendary   → التثبيت التفاعلي
@@ -23,6 +24,7 @@ case "${1:-}" in
     break)      shift; bash "$DIR/BREAK_LIMITS.sh" "$@" ;;
     fix)        shift; bash "$DIR/FIX_DISPLAYS.sh" "$@" ;;
     wallpaper)  shift; bash "$DIR/pixel_wallpaper_manager.sh" "$@" ;;
+    dual)       shift; bash "$DIR/dual-wallpaper.sh" "$@" ;;
     status)     shift; bash "$DIR/upgrade-summary.sh" "$@" ;;
     setup)      shift; bash "$DIR/THE_ULTIMATE_MASTER.sh" "$@" ;;
     legendary)  shift; bash "$DIR/legendary-setup.sh" "$@" ;;
