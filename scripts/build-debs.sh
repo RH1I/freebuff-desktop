@@ -10,6 +10,24 @@ MAINTAINER="Freebuff <freebuff@local>"
 rm -rf "$BUILD_DIR"
 mkdir -p "$BUILD_DIR"
 
+# Build lib package first
+echo "📦 بناء freebuff-lib..."
+LIB_DIR="$BUILD_DIR/freebuff-lib"
+mkdir -p "$LIB_DIR/DEBIAN" "$LIB_DIR/usr/share/freebuff"
+cp "$SCRIPTS_DIR/lib.sh" "$LIB_DIR/usr/share/freebuff/lib.sh"
+chmod 644 "$LIB_DIR/usr/share/freebuff/lib.sh"
+cat > "$LIB_DIR/DEBIAN/control" << EOF
+Package: freebuff-lib
+Version: $VERSION
+Architecture: amd64
+Maintainer: $MAINTAINER
+Description: Freebuff shared library
+Section: libs
+Priority: optional
+EOF
+dpkg-deb --build "$LIB_DIR" "$BUILD_DIR/freebuff-lib_${VERSION}_amd64.deb"
+echo "  ✅ freebuff-lib_${VERSION}_amd64.deb"
+
 build_deb() {
     local name="$1" desc="$2" script="$3"
     local pkg_dir="$BUILD_DIR/$name"
@@ -21,16 +39,15 @@ build_deb() {
     cp "$SCRIPTS_DIR/$script" "$pkg_dir/usr/bin/$name"
     chmod 755 "$pkg_dir/usr/bin/$name"
 
-    cp "$SCRIPTS_DIR/lib.sh" "$pkg_dir/usr/bin/freebuff-lib.sh"
-    chmod 644 "$pkg_dir/usr/bin/freebuff-lib.sh"
-
-    sed -i 's|source "$(dirname "$0")/lib.sh"|source /usr/bin/freebuff-lib.sh|' "$pkg_dir/usr/bin/$name"
+    # Fix lib.sh path to point to shared location
+    sed -i 's|source "$(dirname "$0")/lib.sh"|source /usr/share/freebuff/lib.sh|' "$pkg_dir/usr/bin/$name"
 
     cat > "$pkg_dir/DEBIAN/control" << EOF
 Package: freebuff-$name
 Version: $VERSION
 Architecture: amd64
 Maintainer: $MAINTAINER
+Depends: freebuff-lib
 Description: $desc
 Section: utils
 Priority: optional
@@ -68,8 +85,8 @@ Package: freebuff-all
 Version: $VERSION
 Architecture: amd64
 Maintainer: $MAINTAINER
-Description: Freebuff Desktop - all tools
 Depends: freebuff-color-god, freebuff-brightness, freebuff-break-limits, freebuff-fix-displays, freebuff-wallpaper, freebuff-dual-wallpaper, freebuff-status, freebuff-legendary, freebuff-setup
+Description: Freebuff Desktop - all tools
 Section: metapackages
 Priority: optional
 EOF
@@ -80,6 +97,3 @@ echo ""
 echo "📦 الحزم جاهزة في: $BUILD_DIR"
 echo ""
 ls -lh "$BUILD_DIR"/*.deb | awk '{print "  " $NF " (" $5 ")"}'
-echo ""
-echo "🚀 للتثبيت:"
-echo "  sudo dpkg -i freebuff-all_${VERSION}_amd64.deb"
