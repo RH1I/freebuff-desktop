@@ -142,6 +142,9 @@ compose.desktop {
     application {
         mainClass = "com.maxrave.simpmusic.MainKt"
         jvmArgs += "--add-opens=java.base/java.nio=ALL-UNNAMED"
+        // Same X11 opens the Conveyor path uses — lets the app set its
+        // taskbar WM class instead of warning at every launch.
+        jvmArgs += "--add-opens=java.desktop/sun.awt.X11=ALL-UNNAMED"
 
         nativeDistributions {
             appResourcesRootDir = rootDir.resolve("mpv-natives/")
