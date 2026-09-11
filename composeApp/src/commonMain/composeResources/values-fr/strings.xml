@@ -319,7 +319,7 @@
     <string name="log_in_to_spotify">Se connecter à Spotify</string>
     <string name="intro_login_to_spotify">Connectez-vous pour des paroles Spotify, la toile, et plus encore !</string>
     <string name="enable_spotify_lyrics">Activer les paroles Spotify</string>
-    <string name="spotify_lyrícs_info">Plus de paroles sans traduction</string>
+    <string name="spotify_lyrics_info">Plus de paroles sans traduction</string>
     <string name="enable_canvas">Activer la toile</string>
     <string name="canvas_info">Afficher la toile Spotify dans SimpMusic</string>
     <string name="spotify_lyrics_provider">Paroles fournies par Spotify</string>

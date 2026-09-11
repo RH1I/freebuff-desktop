@@ -318,7 +318,7 @@
     <string name="log_in_to_spotify">使用Spotify帳號登入</string>
     <string name="intro_login_to_spotify">登入以啟用Spotify 歌詞、Canvas 等</string>
     <string name="enable_spotify_lyrics">啟用Spotify歌詞</string>
-    <string name="spotify_lyrícs_info">更多原始歌詞</string>
+    <string name="spotify_lyrics_info">更多原始歌詞</string>
     <string name="enable_canvas">啟用Canvas</string>
     <string name="canvas_info">在SimpMusic中顯示Spotify Canvas</string>
     <string name="spotify_lyrics_provider">歌詞由Spotify提供</string>

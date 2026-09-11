@@ -313,7 +313,7 @@
     <string name="log_in_to_spotify">Вход в Spotify</string>
     <string name="intro_login_to_spotify">Вход за Spotify Lyrics, Canvas и още</string>
     <string name="enable_spotify_lyrics">Включи Spotify Lyrics</string>
-    <string name="spotify_lyrícs_info">Повече текстове без превод</string>
+    <string name="spotify_lyrics_info">Повече текстове без превод</string>
     <string name="enable_canvas">Включване на Canvas</string>
     <string name="canvas_info">Покажи Spotify Canvas в SimpMusic</string>
     <string name="spotify_lyrics_provider">Текст предоставен от Spotify</string>

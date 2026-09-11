@@ -310,7 +310,7 @@
     <string name="log_in_to_spotify">Spotify में लॉग इन करें</string>
     <string name="intro_login_to_spotify">Spotify लिरिक्स, कैनवास और बहुत कुछ के लिए लॉग इन करें</string>
     <string name="enable_spotify_lyrics">Spotify लिरिक्स सक्षम करें</string>
-    <string name="spotify_lyrícs_info">बिना अनुवाद के अधिक गीत</string>
+    <string name="spotify_lyrics_info">बिना अनुवाद के अधिक गीत</string>
     <string name="enable_canvas">कैनवास सक्षम करें</string>
     <string name="canvas_info">SimpMusic में Spotify कैनवास दिखाएं</string>
     <string name="spotify_lyrics_provider">गीत Spotify द्वारा प्रदान किए गए</string>

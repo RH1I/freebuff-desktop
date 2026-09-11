@@ -320,7 +320,7 @@
     <string name="log_in_to_spotify">เข้าสู่ระบบ Spotify</string>
     <string name="intro_login_to_spotify">เข้าสู่ระบบ Spotify Lyrics, Canvas และอื่นๆ</string>
     <string name="enable_spotify_lyrics">เปิดใช้งานเนื้อเพลงของ Spotify</string>
-    <string name="spotify_lyrícs_info">เนื้อเพลงเพิ่มเติมแบบไม่มีคำแปล</string>
+    <string name="spotify_lyrics_info">เนื้อเพลงเพิ่มเติมแบบไม่มีคำแปล</string>
     <string name="enable_canvas">เปิดใช้งาน Canvas</string>
     <string name="canvas_info">แสดง Spotify Canvas ใน SimpMusic</string>
     <string name="spotify_lyrics_provider">เนื้อเพลงโดย Spotify</string>

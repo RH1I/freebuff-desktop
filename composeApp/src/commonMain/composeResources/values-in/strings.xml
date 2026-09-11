@@ -296,7 +296,7 @@
     <string name="log_in_to_spotify">Masuk ke Spotify</string>
     <string name="intro_login_to_spotify">Masuk untuk Lirik Spotify, Kanvas DLL</string>
     <string name="enable_spotify_lyrics">Aktifkan Lirik Spotify</string>
-    <string name="spotify_lyrícs_info">Lirik lainnya tanpa terjemahan</string>
+    <string name="spotify_lyrics_info">Lirik lainnya tanpa terjemahan</string>
     <string name="enable_canvas">Aktifkan Kanvas</string>
     <string name="canvas_info">Tampilkan Kanvas Spotify di SimpMusic</string>
     <string name="spotify_lyrics_provider">Lirik yang disediakan oleh Spotify</string>

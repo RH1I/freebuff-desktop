@@ -370,7 +370,7 @@ import simpmusic.composeapp.generated.resources.sponsorBlock
 import simpmusic.composeapp.generated.resources.sponsor_block_intro
 import simpmusic.composeapp.generated.resources.spotify
 import simpmusic.composeapp.generated.resources.spotify_canvas_cache
-import simpmusic.composeapp.generated.resources.spotify_lyrícs_info
+import simpmusic.composeapp.generated.resources.spotify_lyrics_info
 import simpmusic.composeapp.generated.resources.storage
 import simpmusic.composeapp.generated.resources.such_as_music_video_lyrics_video_podcasts_and_more
 import simpmusic.composeapp.generated.resources.theme
@@ -1682,7 +1682,7 @@ fun SettingScreen(
                 )
                 SettingItem(
                     title = stringResource(Res.string.enable_spotify_lyrics),
-                    subtitle = stringResource(Res.string.spotify_lyrícs_info),
+                    subtitle = stringResource(Res.string.spotify_lyrics_info),
                     switch = (spotifyLyrics to { viewModel.setSpotifyLyrics(it) }),
                     isEnable = spotifyLoggedIn,
                     onDisable = {

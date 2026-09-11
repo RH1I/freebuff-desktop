@@ -312,7 +312,7 @@
     <string name="log_in_to_spotify">Spotify ile giriş yap</string>
     <string name="intro_login_to_spotify">Spotify Şarkı Sözleri, Kanvas ve daha fazlası için giriş yapın</string>
     <string name="enable_spotify_lyrics">Spotify Şarkı Sözlerini Etkinleştir</string>
-    <string name="spotify_lyrícs_info">Çeviri olmadan daha fazla şarkı sözü</string>
+    <string name="spotify_lyrics_info">Çeviri olmadan daha fazla şarkı sözü</string>
     <string name="enable_canvas">Canvas Etkinleştir</string>
     <string name="canvas_info">SimpMusic'te Spotify Canvas'ı Göster</string>
     <string name="spotify_lyrics_provider">Şarkı sözleri Spotify tarafından sağlanmıştır</string>

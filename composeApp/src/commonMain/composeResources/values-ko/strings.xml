@@ -318,7 +318,7 @@
     <string name="log_in_to_spotify">Spotify에 로그인</string>
     <string name="intro_login_to_spotify">로그인하여 Spotify 가사, 캔버스 등 이용</string>
     <string name="enable_spotify_lyrics">Spotify 가사 켜기</string>
-    <string name="spotify_lyrícs_info">번역 없이 더 많은 가사 제공</string>
+    <string name="spotify_lyrics_info">번역 없이 더 많은 가사 제공</string>
     <string name="enable_canvas">캔버스 켜기</string>
     <string name="canvas_info">SimpMusic에 Spotify 캔버스 표시</string>
     <string name="spotify_lyrics_provider">Spotify에서 제공된 가사</string>

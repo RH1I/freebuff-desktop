@@ -294,7 +294,7 @@
     <string name="log_in_to_spotify">Spotify-a daxil olun</string>
     <string name="intro_login_to_spotify">Spotify Lirika, Canvas və daha çoxu üçün daxil olun</string>
     <string name="enable_spotify_lyrics">Spotify Lirikasını Aktivləşdir</string>
-    <string name="spotify_lyrícs_info">Tərcüməsiz daha çox lirika</string>
+    <string name="spotify_lyrics_info">Tərcüməsiz daha çox lirika</string>
     <string name="enable_canvas">Canvas-ı Aktivləşdir</string>
     <string name="canvas_info">SimpMusic-də Spotify Canvas-ı Göstər</string>
     <string name="spotify_lyrics_provider">Lirika Spotify tərəfindən təmin edilib</string>

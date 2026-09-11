@@ -318,7 +318,7 @@
     <string name="log_in_to_spotify">登录Spotify</string>
     <string name="intro_login_to_spotify">登录以获取 Spotify Lyrics, Canvas 及更多</string>
     <string name="enable_spotify_lyrics">启用 Spotify 歌词</string>
-    <string name="spotify_lyrícs_info">更多没有翻译的歌词</string>
+    <string name="spotify_lyrics_info">更多没有翻译的歌词</string>
     <string name="enable_canvas">启用 Canvas</string>
     <string name="canvas_info">在 SimpMusic 中显示 Spotify Canvas</string>
     <string name="spotify_lyrics_provider">由 Spotify 提供的歌词</string>

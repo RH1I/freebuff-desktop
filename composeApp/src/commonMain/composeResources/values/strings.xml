@@ -323,7 +323,7 @@
     <string name="log_in_to_spotify">Log in to Spotify</string>
     <string name="intro_login_to_spotify">Log in for Spotify Lyrics, Canvas and more</string>
     <string name="enable_spotify_lyrics">Enable Spotify Lyrics</string>
-    <string name="spotify_lyrícs_info">More lyrics without translation</string>
+    <string name="spotify_lyrics_info">More lyrics without translation</string>
     <string name="enable_canvas">Enable Canvas</string>
     <string name="canvas_info">Show Spotify Canvas in 0_o</string>
     <string name="spotify_lyrics_provider">Lyrics provided by Spotify</string>
@@ -381,7 +381,8 @@
     <string name="privacy_and_network_sub">Proxy, SponsorBlock</string>
     <string name="about_sub">Version and licenses</string>
     <string name="back">Back</string>
-    <string name="mini_player_toggle">Mini player</string>    <string name="viz_off">Viz: Off</string>
+    <string name="mini_player_toggle">Mini player</string>
+    <string name="viz_off">Viz: Off</string>
     <string name="viz_bars">Viz: Bars</string>
     <string name="viz_wave">Viz: Wave</string>
     <string name="viz_radial">Viz: Swirl</string>

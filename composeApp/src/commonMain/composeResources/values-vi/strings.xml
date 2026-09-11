@@ -318,7 +318,7 @@
     <string name="log_in_to_spotify">Đăng nhập vào Spotify</string>
     <string name="intro_login_to_spotify">Đăng nhập để dùng lời bài hát từ Spotify, Spotify Canvas và hơn nữa</string>
     <string name="enable_spotify_lyrics">Bật lời bài hát từ Spotify</string>
-    <string name="spotify_lyrícs_info">Nhiều lời bài hát hơn nhưng không có dịch</string>
+    <string name="spotify_lyrics_info">Nhiều lời bài hát hơn nhưng không có dịch</string>
     <string name="enable_canvas">Bật Canvas</string>
     <string name="canvas_info">Hiện thỉ Spotify Canvas trong SimpMusic</string>
     <string name="spotify_lyrics_provider">Lời bài hát được cung cấp bởi Spotify</string>

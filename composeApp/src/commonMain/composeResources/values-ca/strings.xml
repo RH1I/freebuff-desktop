@@ -319,7 +319,7 @@
     <string name="log_in_to_spotify">Inicieu sessió a Spotify</string>
     <string name="intro_login_to_spotify">Inicieu la sessió per a Spotify Lyrics, Canvas i molt més</string>
     <string name="enable_spotify_lyrics">Activa les lletres de Spotify</string>
-    <string name="spotify_lyrícs_info">Més lletres sense traducció</string>
+    <string name="spotify_lyrics_info">Més lletres sense traducció</string>
     <string name="enable_canvas">Activa Canvas</string>
     <string name="canvas_info">Mostra Spotify Canvas a SimpMusic</string>
     <string name="spotify_lyrics_provider">Lyrics proporcionada per Spotify</string>

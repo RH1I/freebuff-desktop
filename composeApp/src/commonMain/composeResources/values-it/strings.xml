@@ -319,7 +319,7 @@
     <string name="log_in_to_spotify">Accedi con Spotify</string>
     <string name="intro_login_to_spotify">Accedi per i testi, i Canvas e altro ancora da Spotify</string>
     <string name="enable_spotify_lyrics">Abilita testi da Spotify</string>
-    <string name="spotify_lyrícs_info">Più testi senza traduzione</string>
+    <string name="spotify_lyrics_info">Più testi senza traduzione</string>
     <string name="enable_canvas">Abilita Canvas</string>
     <string name="canvas_info">Mostra i Canvas di Spotify in SimpMusic</string>
     <string name="spotify_lyrics_provider">Testi forniti da Spotify</string>

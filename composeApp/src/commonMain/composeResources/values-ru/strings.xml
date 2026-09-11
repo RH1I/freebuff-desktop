@@ -321,7 +321,7 @@
     <string name="log_in_to_spotify">Войти в Spotify</string>
     <string name="intro_login_to_spotify">Войдите для Spotify Lyrics, Canvas и другого</string>
     <string name="enable_spotify_lyrics">Включить тексты песен Spotify</string>
-    <string name="spotify_lyrícs_info">Больше текстов песен без перевода</string>
+    <string name="spotify_lyrics_info">Больше текстов песен без перевода</string>
     <string name="enable_canvas">Включить Canvas</string>
     <string name="canvas_info">Показывать Canvas Spotify в SimpMusic</string>
     <string name="spotify_lyrics_provider">Текст предоставлен Spotify</string>

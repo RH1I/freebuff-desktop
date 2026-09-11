@@ -320,7 +320,7 @@
     <string name="log_in_to_spotify">Zaloguj się do Spotify</string>
     <string name="intro_login_to_spotify">Zaloguj się po teksty piosenek, Canvas i wiele innych</string>
     <string name="enable_spotify_lyrics">Włącz teksty piosenek Spotify</string>
-    <string name="spotify_lyrícs_info">Więcej tekstu bez tłumaczenia</string>
+    <string name="spotify_lyrics_info">Więcej tekstu bez tłumaczenia</string>
     <string name="enable_canvas">Włącz Canvas</string>
     <string name="canvas_info">Pokaż Spotify Canvas w SimpMusic</string>
     <string name="spotify_lyrics_provider">Tekst piosenki dostarczony przez Spotify</string>

@@ -307,7 +307,7 @@
     <string name="log_in_to_spotify">Spotify にログインする</string>
     <string name="intro_login_to_spotify">Spotifyにログインして、歌詞やキャンバスなどを取得する</string>
     <string name="enable_spotify_lyrics">Spotifyの歌詞を有効化</string>
-    <string name="spotify_lyrícs_info">翻訳機能なしで歌詞を表示</string>
+    <string name="spotify_lyrics_info">翻訳機能なしで歌詞を表示</string>
     <string name="enable_canvas">キャンバスを有効にする</string>
     <string name="canvas_info">SpotifyのキャンバスをSimpMusicで表示</string>
     <string name="spotify_lyrics_provider">歌詞の提供元 Spotify</string>

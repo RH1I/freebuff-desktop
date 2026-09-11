@@ -324,7 +324,7 @@
     <string name="log_in_to_spotify">وارد اسپاتیفای شوید</string>
     <string name="intro_login_to_spotify">وارد شوید برای متن ترانه‌های اسپاتیفای، بوم و بیشتر</string>
     <string name="enable_spotify_lyrics">به‌کارگیری متن ترانه اسپاتیفای</string>
-    <string name="spotify_lyrícs_info">متن‌های بیشتری بدون ترجمه</string>
+    <string name="spotify_lyrics_info">متن‌های بیشتری بدون ترجمه</string>
     <string name="enable_canvas">به‌کارگیری بوم</string>
     <string name="canvas_info">نمایش بوم اسپاتیفای در SimpMusic</string>
     <string name="spotify_lyrics_provider">متن ترانه ارائه شده توسط اسپاتیفای</string>
