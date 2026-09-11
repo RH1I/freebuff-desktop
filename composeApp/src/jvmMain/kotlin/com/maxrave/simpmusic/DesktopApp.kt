@@ -5,9 +5,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -24,7 +26,6 @@ import coil3.disk.DiskCache
 import coil3.network.okhttp.OkHttpNetworkFetcherFactory
 import coil3.request.CachePolicy
 import coil3.request.crossfade
-import com.kdroid.composetray.tray.api.Tray
 import com.kdroid.composetray.utils.SingleInstanceManager
 import com.maxrave.data.di.loader.loadAllModules
 import com.maxrave.domain.manager.DataStoreManager
@@ -269,45 +270,76 @@ fun runDesktopApp(args: Array<String> = emptyArray()) {
         val hasTrack = nowPlayingTitle.isNotBlank()
         // Tray menus are narrow, so long titles would stretch the popup.
         val trayLabel: (String) -> String = { if (it.length > 40) it.take(39).trimEnd() + "…" else it }
-        Tray(
-            icon = painterResource(Res.drawable.circle_app_icon),
-            tooltip =
-                when {
-                    hasTrack && nowPlayingArtist.isNotBlank() -> "$nowPlayingTitle — $nowPlayingArtist"
-                    hasTrack -> nowPlayingTitle
-                    else -> appName
-                },
-            primaryAction = {
-                DesktopRestoreSignal.request()
-            },
-        ) {
-            // Disabled entries: while the window is hidden the tray is the only place showing what
-            // is playing.
-            if (hasTrack) {
-                Item(trayLabel(nowPlayingTitle), isEnabled = false)
-                if (nowPlayingArtist.isNotBlank()) {
-                    Item(trayLabel(nowPlayingArtist), isEnabled = false)
-                }
-                Divider()
+        val trayTooltip =
+            when {
+                hasTrack && nowPlayingArtist.isNotBlank() -> "$nowPlayingTitle — $nowPlayingArtist"
+                hasTrack -> nowPlayingTitle
+                else -> appName
             }
-            if (!isVisible) {
-                Item(openAppString) {
-                    DesktopRestoreSignal.request()
+        // 0_o: AWT system tray instead of ComposeNativeTray — the lib renders
+        // icons through a skiko call it was compiled against (encodeToData),
+        // which no longer exists at runtime, crashing every launch with
+        // NoSuchMethodError (and 1.3.3 is its newest release). AWT is
+        // JDK-stable and draws the PNG directly with no rendering step.
+        val awtIcon by produceState<java.awt.Image?>(initialValue = null) {
+            value =
+                runCatching {
+                    val bytes = Res.readBytes("drawable/circle_app_icon.png")
+                    javax.imageio.ImageIO.read(bytes.inputStream())
+                }.getOrNull()
+        }
+        val exitApp = { exitApplication() }
+        if (awtIcon != null && java.awt.SystemTray.isSupported()) {
+            val miniOpen = MiniPlayerManager.isOpen
+            DisposableEffect(
+                awtIcon, trayTooltip, hasTrack, isVisible, miniOpen,
+                openAppString, openMiniPlayer, closeMiniPlayer, quitAppString,
+            ) {
+                val tray = java.awt.SystemTray.getSystemTray()
+                val popup = java.awt.PopupMenu()
+                // Disabled entries: while the window is hidden the tray is the only place showing what
+                // is playing.
+                if (hasTrack) {
+                    popup.add(java.awt.MenuItem(trayLabel(nowPlayingTitle)).apply { isEnabled = false })
+                    if (nowPlayingArtist.isNotBlank()) {
+                        popup.add(java.awt.MenuItem(trayLabel(nowPlayingArtist)).apply { isEnabled = false })
+                    }
+                    popup.addSeparator()
                 }
-            }
-            if (MiniPlayerManager.isOpen) {
-                Item(closeMiniPlayer) {
-                    MiniPlayerManager.isOpen = false
+                if (!isVisible) {
+                    popup.add(
+                        java.awt.MenuItem(openAppString).apply {
+                            addActionListener { DesktopRestoreSignal.request() }
+                        },
+                    )
                 }
-            } else {
-                Item(openMiniPlayer) {
-                    MiniPlayerManager.isOpen = true
-                }
-            }
-            Divider()
-            Item(quitAppString) {
-                mediaPlayerHandler.release()
-                exitApplication()
+                popup.add(
+                    java.awt.MenuItem(if (miniOpen) closeMiniPlayer else openMiniPlayer).apply {
+                        addActionListener { MiniPlayerManager.isOpen = !MiniPlayerManager.isOpen }
+                    },
+                )
+                popup.addSeparator()
+                popup.add(
+                    java.awt.MenuItem(quitAppString).apply {
+                        addActionListener {
+                            mediaPlayerHandler.release()
+                            exitApp()
+                        }
+                    },
+                )
+                val size = tray.trayIconSize
+                val icon =
+                    java.awt.TrayIcon(
+                        awtIcon!!.getScaledInstance(size.width, size.height, java.awt.Image.SCALE_SMOOTH),
+                        trayTooltip,
+                        popup,
+                    ).apply {
+                        isImageAutoSize = true
+                        // Left-click restores the window (the old primaryAction).
+                        addActionListener { DesktopRestoreSignal.request() }
+                    }
+                runCatching { tray.add(icon) }
+                onDispose { runCatching { tray.remove(icon) } }
             }
         }
         // Detect virtual machines (Parallels, VirtualBox, VMware, etc.).
