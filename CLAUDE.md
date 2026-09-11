@@ -569,6 +569,15 @@ if (getPlatform() == Platform.Android) {
   - Accepted trade-offs, neither reproducible in testing on macOS 27: delayed mute (mpv#15014) and audio desync on playback-speed changes (mpv#14483). The trailing comma in `"avfoundation,"` keeps mpv's auto-probe as a fallback, so a failure degrades audio instead of silencing it. Remove the whole workaround once upstream frees the listener on the error path.
   - Related blind spot, still open: nothing calls `mpv_request_log_messages()`, so libmpv's own warnings (including failed audio init) never surface anywhere.
 
+### 0_o personal build (2026-08, P1–P15)
+- **Rebrand to 0_o**: `app_name` = `0_o` (plus `0_o Dev` debug), credit/crash/sync strings rewritten, `OoSplash` (eye-opening face) + `OoEmptyState` (sleeping moon / cliff starlight) wired into search, `0_o` icon in mini player/crash dialog, Sentry/TIDAL phone-home removed (crashes stay on-device, `Downloads/0_o` auto-backup)
+- **Mini player v2**: synced-lyric line (`derivedStateOf` zero-lag), progress-line-only recomposition, pill shape + pill-safe padding, liquid glass, on/off toggle (`mini_player_toggle`, ar+en)
+- **Visualizer engine**: shared `VisualizerView` (BARS/WAVE_AROUND_ART/RADIAL) + `VisualizerBus` in `core/domain`, Android in-graph PCM tap + FFT (no permissions), mode toggle in Now Playing/Fullscreen (`viz_off/bars/wave/radial`, ar+en), desktop fed from mpv lavfi engine behind capability probe
+- **Lyrics Apple-recipe**: per-line scale/alpha depth, interlude dots during gaps, one-tap copy cluster (lyrics/translated/title–artist)
+- **Themes**: live album colours (saturation-weighted dominant colour, ALBUM theme source) + golden hour auto-switch (18:00–06:00 → Golden Moon palette) with toggle (`golden_hour_toggle`, ar+en)
+- **Desktop**: KCEF login preflight checks + missing-libs dialog (ar+en), probe-gated 10-band equalizer with presets (`equalizer`, ar+en)
+- **Moon widget (P15)**: `MoonWidgetProvider` sleeping-moon now-playing widget replaces stock player widget (`moon_widget_description`, ar+en, `ic_moon_sleeping`)
+
 ## 🔄 CLAUDE.md Auto-Update Rule (MANDATORY)
 
 After completing any of the following types of changes, the AI agent **MUST** update this CLAUDE.md file:
@@ -593,6 +602,6 @@ After completing any of the following types of changes, the AI agent **MUST** up
 
 *This document helps AI Agents quickly understand the SimpMusic project. Update regularly when there are major changes to architecture or structure.*
 
-**Last updated**: 2026-08-05
+**Last updated**: 2026-09-11
 **Project version**: Check latest release on GitHub
 **Maintained by**: maxrave-dev and contributors
