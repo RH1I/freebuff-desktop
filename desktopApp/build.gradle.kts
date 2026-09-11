@@ -158,9 +158,16 @@ compose.desktop {
                     listOf(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.AppImage),
                 )
             }
+            if (org.gradle.internal.os.OperatingSystem
+                    .current()
+                    .isLinux
+            ) {
+                // 0_o personal build: native .deb for amd64 (dpkg + menu entry).
+                listTarget.add(TargetFormat.Deb)
+            }
             targetFormats(*listTarget.toTypedArray())
             modules("jdk.unsupported")
-            packageName = "SimpMusic"
+            packageName = "o-o"
             macOS {
                 val formatedDate =
                     Instant.now().let {
