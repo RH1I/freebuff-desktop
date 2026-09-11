@@ -16,7 +16,6 @@ import com.maxrave.domain.extension.EQ_MIN_GAIN_DB
 import com.maxrave.domain.manager.DataStoreManager
 import com.maxrave.domain.manager.DataStoreManager.Values.AI_PROVIDER_GEMINI
 import com.maxrave.domain.manager.DataStoreManager.Values.FALSE
-import com.maxrave.domain.manager.DataStoreManager.Values.GITHUB
 import com.maxrave.domain.manager.DataStoreManager.Values.LOCAL_PLAYLIST_FILTER_OLDER_FIRST
 import com.maxrave.domain.manager.DataStoreManager.Values.PROXY_TYPE_HTTP
 import com.maxrave.domain.manager.DataStoreManager.Values.PROXY_TYPE_SOCKS
@@ -413,14 +412,19 @@ internal class DataStoreManagerImpl(
     override suspend fun setSponsorBlockCategories(categories: ArrayList<String>) {
         withContext(Dispatchers.IO) {
             Logger.w("setSponsorBlockCategories", categories.toString())
-            for (category in categories) {
-                settingsDataStore.edit { settings ->
-                    settings[stringPreferencesKey(category)] = TRUE
-                }
-            }
-            SponsorBlockType.toList().filter { !categories.contains(it.value) }.forEach { category ->
-                settingsDataStore.edit { settings ->
-                    settings[stringPreferencesKey(category.toString())] = FALSE
+            // Every category is written in ONE edit, keyed by `value` on both branches.
+            //
+            // The clearing branch used to key on `category.toString()`. SponsorBlockType is a sealed
+            // class of data objects, so that is the object's NAME — "SPONSOR" — while the enabled
+            // branch and [getSponsorBlockCategories] both use `value`, "sponsor". Unticking a
+            // category therefore wrote FALSE to a key nobody reads and left the real one at TRUE:
+            // the choice came back unchanged every time the dialog was reopened, and all nine
+            // categories stayed on forever. Confirmed against a real settings store where every one
+            // of the nine read TRUE.
+            settingsDataStore.edit { settings ->
+                SponsorBlockType.toList().forEach { category ->
+                    settings[stringPreferencesKey(category.value)] =
+                        if (categories.contains(category.value)) TRUE else FALSE
                 }
             }
         }
@@ -943,38 +947,6 @@ internal class DataStoreManagerImpl(
                 settingsDataStore.edit { settings ->
                     settings[SHOULD_SHOW_LOG_IN_REQUIRED_ALERT] = FALSE
                 }
-            }
-        }
-    }
-
-    override val autoCheckForUpdates =
-        settingsDataStore.data.map { preferences ->
-            preferences[AUTO_CHECK_FOR_UPDATES] ?: TRUE
-        }
-
-    override suspend fun setAutoCheckForUpdates(autoCheck: Boolean) {
-        withContext(Dispatchers.IO) {
-            if (autoCheck) {
-                settingsDataStore.edit { settings ->
-                    settings[AUTO_CHECK_FOR_UPDATES] = TRUE
-                }
-            } else {
-                settingsDataStore.edit { settings ->
-                    settings[AUTO_CHECK_FOR_UPDATES] = FALSE
-                }
-            }
-        }
-    }
-
-    override val updateChannel =
-        settingsDataStore.data.map { preferences ->
-            preferences[UPDATE_CHANNEL] ?: GITHUB
-        }
-
-    override suspend fun setUpdateChannel(channel: String) {
-        withContext(Dispatchers.IO) {
-            settingsDataStore.edit { settings ->
-                settings[UPDATE_CHANNEL] = channel
             }
         }
     }
@@ -1599,8 +1571,6 @@ internal class DataStoreManagerImpl(
         val KEEP_YOUTUBE_PLAYLIST_OFFLINE = stringPreferencesKey("keep_youtube_playlist_offline")
         val COMBINE_LOCAL_AND_YOUTUBE_LIKED = stringPreferencesKey("combine_local_and_youtube_liked")
         val SHOULD_SHOW_LOG_IN_REQUIRED_ALERT = stringPreferencesKey("should_show_log_in_required_alert")
-        val AUTO_CHECK_FOR_UPDATES = stringPreferencesKey("auto_check_for_updates")
-        val UPDATE_CHANNEL = stringPreferencesKey("update_channel")
         val PLAYBACK_SPEED = floatPreferencesKey("playback_speed")
         val PITCH = intPreferencesKey("pitch")
         val OPEN_APP_TIME = intPreferencesKey("open_app_time")

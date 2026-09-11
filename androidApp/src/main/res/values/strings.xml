@@ -6,4 +6,6 @@
     <string name="moon_widget_idle_artist">Tap to wake the moon</string>
     <string name="moon_widget_play">Play</string>
     <string name="moon_widget_pause">Pause</string>
+    <string name="widget_turntable_label">Turntable</string>
+    <string name="widget_turntable_description">Album art with play and skip</string>
 </resources>

@@ -6,4 +6,6 @@
     <string name="moon_widget_idle_artist">انقر لإيقاظ القمر</string>
     <string name="moon_widget_play">تشغيل</string>
     <string name="moon_widget_pause">إيقاف مؤقت</string>
+    <string name="widget_turntable_label">ترنتيبل</string>
+    <string name="widget_turntable_description">غلاف الألبوم مع تشغيل وتخطي</string>
 </resources>

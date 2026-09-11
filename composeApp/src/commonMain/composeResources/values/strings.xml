@@ -85,6 +85,7 @@
     <string name="edit">Edit</string>
     <string name="edit_title">Edit title</string>
     <string name="edit_thumbnail">Edit thumbnail</string>
+    <string name="crop_cover">Crop cover</string>
     <string name="delete_playlist">Delete playlist</string>
     <string name="add_to_a_playlist">Add to a playlist</string>
     <string name="share">Share</string>
