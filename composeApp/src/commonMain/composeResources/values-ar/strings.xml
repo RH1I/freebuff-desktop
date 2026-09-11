@@ -386,6 +386,7 @@
     <string name="viz_bars">المرئيات: أعمدة</string>
     <string name="viz_wave">المرئيات: موجة</string>
     <string name="viz_radial">المرئيات: دوامة</string>
+    <string name="viz_pulse">المرئيات: نبض</string>
     <string name="copy_lyrics">نسخ الكلمات</string>
     <string name="copy_translated_lyrics">نسخ الكلمات المترجمة</string>
     <string name="copy_title_artist">نسخ العنوان والفنان</string>

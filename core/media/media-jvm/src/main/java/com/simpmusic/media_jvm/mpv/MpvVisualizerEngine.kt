@@ -124,7 +124,8 @@ class MpvVisualizerEngine internal constructor(
          *  1. A `vo=libmpv` software render context must exist (the Linux slice builds mpv without
          *     X11/Wayland/GL VOs on purpose — but `libmpv` itself is always available).
          *  2. libavfilter must know `showfreqs`. The custom Linux ffmpeg compiles a whitelist
-         *     (`--enable-filter=...`) that does NOT include it; stock Windows/macOS builds do.
+         *     (`--enable-filter=...`) that includes it since the 0_o slice rebuild (it was
+         *     missing before, which starved the bus on Linux); stock Windows/macOS builds do.
          *
          * Both are checked with one throwaway handle, and the verdict is cached process-wide.
          */

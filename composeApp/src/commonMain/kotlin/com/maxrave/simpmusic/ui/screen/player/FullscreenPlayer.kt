@@ -96,6 +96,7 @@ import simpmusic.composeapp.generated.resources.viz_off
 import simpmusic.composeapp.generated.resources.viz_bars
 import simpmusic.composeapp.generated.resources.viz_wave
 import simpmusic.composeapp.generated.resources.viz_radial
+import simpmusic.composeapp.generated.resources.viz_pulse
 import simpmusic.composeapp.generated.resources.five_seconds
 import kotlin.math.roundToLong
 import com.maxrave.domain.visualization.VisualizerBus
@@ -201,7 +202,7 @@ fun FullscreenPlayer(
         mutableStateOf(true)
     }
 
-    // 0_o visualizer: cycles OFF -> BARS -> WAVE_AROUND_ART -> RADIAL.
+    // 0_o visualizer: cycles OFF -> BARS -> WAVE_AROUND_ART -> RADIAL -> PULSE.
     var vizModeIndex by rememberSaveable { mutableIntStateOf(0) }
     val vizModes = VisualizerMode.entries
     val vizMode = vizModes[vizModeIndex.coerceIn(0, vizModes.lastIndex)]
@@ -210,9 +211,9 @@ fun FullscreenPlayer(
         onDispose { VisualizerBus.isEnabled = false }
     }
     val vizBands by VisualizerBus.bands.collectAsStateWithLifecycle()
-    // 0_o: desktop now feeds the bus from the mpv lavfi engine — but only when the bundled libmpv
-    // actually has the showfreqs filter (the custom Linux ffmpeg slice does not; stock
-    // Windows/macOS builds do). The probe runs once and is cached.
+    // 0_o: desktop feeds the bus from the mpv lavfi engine when the bundled libmpv
+    // has the showfreqs filter (the custom Linux slice includes it since the 0_o
+    // rebuild). The probe runs once and is cached.
     val showVizToggle =
         if (getPlatform() == Platform.Android) {
             true
@@ -367,6 +368,7 @@ fun FullscreenPlayer(
                                 VisualizerMode.BARS -> stringResource(Res.string.viz_bars)
                                 VisualizerMode.WAVE_AROUND_ART -> stringResource(Res.string.viz_wave)
                                 VisualizerMode.RADIAL -> stringResource(Res.string.viz_radial)
+                                VisualizerMode.PULSE -> stringResource(Res.string.viz_pulse)
                             },
                             style = typo().labelSmall,
                             color = Color.White,

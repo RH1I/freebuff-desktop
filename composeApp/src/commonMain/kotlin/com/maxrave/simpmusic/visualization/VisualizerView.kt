@@ -1,6 +1,11 @@
 package com.maxrave.simpmusic.visualization
 
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.runtime.Composable
@@ -16,7 +21,7 @@ import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.unit.dp
 import kotlin.math.min
 
-/** The three 0_o visualizer flavours. */
+/** The 0_o visualizer flavours. */
 enum class VisualizerMode {
     /** Visualizer disabled. */
     OFF,
@@ -29,6 +34,9 @@ enum class VisualizerMode {
 
     /** A radial spectrum swirl (butterchurn-spirit). */
     RADIAL,
+
+    /** Bass-reactive heartbeat halo with orbiting sparks. */
+    PULSE,
 }
 
 /**
@@ -53,6 +61,20 @@ fun VisualizerView(
         )
         v
     }
+    // Orbit clock for PULSE sparks (common-safe: no platform clock API).
+    // Created only in PULSE mode so other modes pay nothing.
+    val orbitPhase =
+        if (mode == VisualizerMode.PULSE) {
+            val phase by rememberInfiniteTransition(label = "pulse").animateFloat(
+                initialValue = 0f,
+                targetValue = 2f * Math.PI.toFloat(),
+                animationSpec = infiniteRepeatable(tween(durationMillis = 2800, easing = LinearEasing), RepeatMode.Restart),
+                label = "orbit",
+            )
+            phase
+        } else {
+            0f
+        }
 
     Canvas(modifier = modifier) {
         val w = size.width
@@ -124,6 +146,47 @@ fun VisualizerView(
                             alpha = 0.35f + 0.65f * v,
                         )
                     }
+                }
+            }
+
+            VisualizerMode.PULSE -> {
+                // Bass-reactive heartbeat: a breathing halo, a rim riding the
+                // kick, and three sparks orbiting the art. The 90ms tween on
+                // `animated` is the envelope — no extra clocks needed.
+                val center = Offset(w / 2f, h / 2f)
+                val baseR = min(w, h) / 2f * albumCenterFraction
+                val bassN = (animated.size / 5).coerceAtLeast(1)
+                var bassSum = 0f
+                for (i in 0 until bassN) bassSum += animated.getOrNull(i) ?: 0f
+                val pulse = (bassSum / bassN).coerceIn(0f, 1f)
+                val haloR = baseR * (1.35f + 0.45f * pulse)
+                drawCircle(
+                    brush =
+                        Brush.radialGradient(
+                            0f to color.copy(alpha = 0.10f + 0.30f * pulse),
+                            0.7f to color.copy(alpha = 0.05f + 0.12f * pulse),
+                            1f to Color.Transparent,
+                            center = center,
+                            radius = haloR,
+                        ),
+                    radius = haloR,
+                    center = center,
+                )
+                drawCircle(
+                    color = color.copy(alpha = 0.45f + 0.45f * pulse),
+                    radius = baseR * (1.06f + 0.14f * pulse),
+                    center = center,
+                    style = Stroke(width = (2f + 2f * pulse).dp.toPx()),
+                )
+                val t = orbitPhase
+                for (k in 0 until 3) {
+                    val a = t + k * (2f * Math.PI.toFloat() / 3f)
+                    val r = baseR * (1.28f + 0.22f * pulse)
+                    drawCircle(
+                        color = color.copy(alpha = 0.85f),
+                        radius = 3.dp.toPx(),
+                        center = Offset(center.x + r * kotlin.math.cos(a), center.y + r * kotlin.math.sin(a)),
+                    )
                 }
             }
         }

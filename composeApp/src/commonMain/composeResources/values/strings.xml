@@ -386,6 +386,7 @@
     <string name="viz_bars">Viz: Bars</string>
     <string name="viz_wave">Viz: Wave</string>
     <string name="viz_radial">Viz: Swirl</string>
+    <string name="viz_pulse">Viz: Pulse</string>
     <string name="copy_lyrics">Copy lyrics</string>
     <string name="copy_translated_lyrics">Copy translated lyrics</string>
     <string name="copy_title_artist">Copy title &amp; artist</string>

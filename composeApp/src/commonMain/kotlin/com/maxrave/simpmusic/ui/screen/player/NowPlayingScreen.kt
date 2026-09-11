@@ -158,6 +158,7 @@ import com.maxrave.simpmusic.extension.parseTimestampToMilliseconds
 import com.maxrave.simpmusic.extension.rememberIsInPipMode
 import com.maxrave.simpmusic.extension.smoothScrimBrush
 import com.maxrave.simpmusic.getPlatform
+import com.maxrave.simpmusic.visualizerEngineAvailable
 import com.maxrave.simpmusic.ui.component.AIBadge
 import com.maxrave.simpmusic.ui.component.AddToPlaylistModalBottomSheet
 import com.maxrave.simpmusic.ui.component.DescriptionView
@@ -209,6 +210,7 @@ import simpmusic.composeapp.generated.resources.viz_off
 import simpmusic.composeapp.generated.resources.viz_bars
 import simpmusic.composeapp.generated.resources.viz_wave
 import simpmusic.composeapp.generated.resources.viz_radial
+import simpmusic.composeapp.generated.resources.viz_pulse
 import simpmusic.composeapp.generated.resources.artists
 import simpmusic.composeapp.generated.resources.crossfading
 import simpmusic.composeapp.generated.resources.description
@@ -750,7 +752,7 @@ fun NowPlayingScreenContent(
     if (screenDataState.lyricsData != null && controllerState.isPlaying) {
         KeepScreenOn()
     }
-    // 0_o visualizer: cycles OFF -> BARS -> WAVE_AROUND_ART -> RADIAL.
+    // 0_o visualizer: cycles OFF -> BARS -> WAVE_AROUND_ART -> RADIAL -> PULSE.
     var vizModeIndex by rememberSaveable { mutableIntStateOf(0) }
     val vizModes = VisualizerMode.entries
     val vizMode = vizModes[vizModeIndex.coerceIn(0, vizModes.lastIndex)]
@@ -759,6 +761,14 @@ fun NowPlayingScreenContent(
         onDispose { VisualizerBus.isEnabled = false }
     }
     val vizBands by VisualizerBus.bands.collectAsStateWithLifecycle()
+    // Same probe gate as FullscreenPlayer: hide the toggle entirely when this
+    // build's engine can't feed the bus, instead of a dead button.
+    val showVizToggle =
+        if (getPlatform() == Platform.Android) {
+            true
+        } else {
+            remember { visualizerEngineAvailable() }
+        }
 
     Box {
         Column(
@@ -820,10 +830,10 @@ fun NowPlayingScreenContent(
         ) {
             Box(modifier = Modifier.fillMaxWidth()) {
                 // === 0_o visualizer behind the artwork (vudio/radial hugging the art) ===
-                if (vizMode != VisualizerMode.OFF) {
+                if (showVizToggle && vizMode != VisualizerMode.OFF) {
                     VisualizerView(
                         bands = vizBands,
-                        mode = if (vizMode == VisualizerMode.BARS) VisualizerMode.WAVE_AROUND_ART else vizMode,
+                        mode = vizMode,
                         modifier =
                             Modifier
                                 .matchParentSize(),
@@ -836,6 +846,7 @@ fun NowPlayingScreenContent(
                 // centered square thumbnail. Both layers slide together as a single page
                 // so when the user swipes during canvas mode, they see the next track's
                 // thumbnail enter and the canvas exit in lockstep.
+                if (showVizToggle) {
                 CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides Dp.Unspecified) {
                     TextButton(
                         onClick = { vizModeIndex = (vizModeIndex + 1) % vizModes.size },
@@ -850,11 +861,13 @@ fun NowPlayingScreenContent(
                                 VisualizerMode.BARS -> stringResource(Res.string.viz_bars)
                                 VisualizerMode.WAVE_AROUND_ART -> stringResource(Res.string.viz_wave)
                                 VisualizerMode.RADIAL -> stringResource(Res.string.viz_radial)
+                                VisualizerMode.PULSE -> stringResource(Res.string.viz_pulse)
                             },
                             style = typo().labelSmall,
                             color = MaterialTheme.colorScheme.onSurface,
                         )
                     }
+                }
                 }
                 HorizontalPager(
                     state = artworkPagerState,
