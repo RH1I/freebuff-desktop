@@ -578,6 +578,13 @@ if (getPlatform() == Platform.Android) {
 - **Desktop**: KCEF login preflight checks + missing-libs dialog (ar+en), probe-gated 10-band equalizer with presets (`equalizer`, ar+en)
 - **Moon widget (P15)**: `MoonWidgetProvider` sleeping-moon now-playing widget replaces stock player widget (`moon_widget_description`, ar+en, `ic_moon_sleeping`)
 
+### 0_o takes from upstream 2.1.0 (2026-09, donor tarball missing several backends — ported only what is complete)
+- **TurntableWidget**: classic RemoteViews now-playing widget as a second widget next to MoonWidget (manifest entry, previews, ar+en labels)
+- **Playlist cover change**: `ImageCropperDialog` + `ImageIo` expect/actual (android/jvm) + Calf picker on desktop, wired into LocalPlaylistBottomSheet (`crop_cover`, ar+en)
+- **Fixes**: SponsorBlock unticked-categories persistence + sub-1s segment skip margin (android+jvm); Linux pitch via `librubberband` (Dockerfile: `librubberband-dev`, `-Drubberband=enabled`, slice rebuilt); unsynced-lyrics blur; artwork jumping on queue growth; unclipped setting descriptions
+- **Personal removals**: upstream update phone-home deleted (UpdateRepository/Impl, UpdateData, Github/FdroidResponse, scraper fns, SharedVM/SettingsVM states, MainActivity trigger, DataStore keys) — a personal build must never nag upstream releases; dead imports/strings cleaned
+- **SKIPPED with reason**: Wrapped/ListenTogether/Romanization/AutoEq/Delay-Reverb/AM-animated-art (donor lacks their backends); RSS/blog notify (dev channel, already removed); deep-link `simpmusic.org` plumbing + `com.maxrave` package kept (invisible, functional, high-risk to rename)
+
 ## 🔄 CLAUDE.md Auto-Update Rule (MANDATORY)
 
 After completing any of the following types of changes, the AI agent **MUST** update this CLAUDE.md file:
