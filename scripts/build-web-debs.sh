@@ -139,6 +139,8 @@ if [ "\$1" = configure ]; then
       un=\$(id -nu "\$u" 2>/dev/null) || continue
       [ "\$un" = root ] && continue
       runuser -u "\$un" -- env XDG_RUNTIME_DIR=/run/user/\$u systemctl --user daemon-reload 2>/dev/null || true
+      # restart if already active so the service serves the newly unpacked build
+      runuser -u "\$un" -- env XDG_RUNTIME_DIR=/run/user/\$u sh -c 'systemctl --user is-active --quiet $pkg.service && systemctl --user restart $pkg.service' 2>/dev/null || true
       runuser -u "\$un" -- env XDG_RUNTIME_DIR=/run/user/\$u systemctl --user enable --now $pkg.service 2>/dev/null || true
     done
   fi
