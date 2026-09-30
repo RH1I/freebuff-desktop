@@ -1,0 +1,49 @@
+Verification Log - 2026-08-27 Final Comprehensive (مرة شاملة)
+================================================================
+Total: 7.6G  (was 5.3G before adding node_modules + old 7mesh + Freebuff old)
+Files: 157388 files, 17344 dirs
+Method: rsync -a --checksum (all exit 0)
+
+Breakdown (du -sh sorted):
+1.6G  external_best (harbor-packages_best 808M + komi-builds_best 111M + AppImages + APKs)
+1.5G  7meshX_best_3.1.0 (with dist + node_modules, 1611 tests)
+1.3G  3lmnu (now WITH node_modules 1.1G - fully ready)
+1.1G  old_versions (harbor_old 266M + simpmusic_old 325M + komi_old 111M + 7mesh_old 215M + Freebuff old + 9or ascii)
+817M  upscale (now WITH node_modules 807M - fully ready)
+658M  Harbor_best_0.9.89 (with node_modules, without target - 67b9f4a committed)
+467M  SimpMusic_best (universal APK best, desktop binary still needs build)
+199M  ascii-0x (with node_modules + dist)
+119M  Komi_best (source, without build/.gradle)
+9.2M  Freebuff_best (scripts 12 + packages 11 + config)
+28K   00-docs (3 md + this log)
+
+Checksums sample:
+Harbor package.json 51469e00b896850fc0db86417aa4a6eeb2d50456ce581bfef870f8ee885f5938
+7meshX package.json e3b8f50b74d1aedf0d87061890ddf67eecc766f915ae27153a02407d9dbccc01
+ascii package.json d68bdedec3e963a27f211f23ba628d897de3eb40c203c06621836565d224d855
+
+Git:
+Harbor_best 67b9f4a chore: merge best theme/settings
+7meshX cc7729a 1611/1611 green
+Komi 07d991b AURORA
+SimpMusic 0d0ccee moon widget
+ascii 38abec7
+
+Services (systemctl --user is-active):
+3lmni active (curl 200)
+upscale active (curl 200)
+lockbeast-scheduler active (auto_change true)
+
+Fixes applied:
+- Harbor 2 files merged and committed
+- LockBeast auto_change_enabled true (backup at /tmp/backup_pre_build/settings.json.bak)
+- 3lmnu/upscale node_modules now copied (was missing) - now fully ready
+- Freebuff AppImages BEST + OLD now correctly separated (was duplicate)
+- 7mesh old versions added to old_versions/7mesh_old
+- All rsync --checksum, no deletions of originals
+
+Remaining notes:
+- SimpMusic desktop binary still needs build (universal APK is BEST)
+- Komi release-unsigned needs signing
+- Harbor 0.9.89 deb needs sudo dpkg -i to install (0.9.88 installed)
+- All 157k files verified
